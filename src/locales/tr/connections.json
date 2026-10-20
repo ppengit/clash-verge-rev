@@ -24,7 +24,8 @@
     "actions": {
       "active": "Etkin",
       "closed": "Kapatılan",
-      "closeConnection": "Bağlantıyı Kapat"
+      "closeConnection": "Bağlantıyı Kapat",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "Sütunlar",

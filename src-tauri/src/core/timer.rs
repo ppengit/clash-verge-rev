@@ -169,6 +169,65 @@ impl Timer {
             }
         }
 
+        let startup_updates = {
+            let verge = Config::verge().await.data_arc();
+            let settings = verge.subscription_settings.as_ref();
+            let update_on_startup = settings
+                .and_then(|settings| settings.update_on_startup)
+                .unwrap_or(false);
+            if update_on_startup {
+                let only_current = settings
+                    .and_then(|settings| settings.update_only_current)
+                    .unwrap_or(false);
+                let profiles = Config::profiles().await.data_arc();
+                let current = profiles.current.as_ref();
+                let mut uids = Vec::new();
+                if let Some(items) = profiles.items.as_ref() {
+                    for item in items {
+                        if item.itype.as_deref() != Some("remote") || item.url.is_none() {
+                            continue;
+                        }
+                        if only_current && item.uid.as_ref() != current {
+                            continue;
+                        }
+                        if let Some(uid) = item.uid.clone() {
+                            uids.push(uid);
+                        }
+                    }
+                }
+                // Bound startup bursts; user edits remain the source of truth for intervals.
+                uids.truncate(32);
+                Some(uids)
+            } else {
+                None
+            }
+        };
+
+        if let Some(uids) = startup_updates
+            && !uids.is_empty()
+        {
+            logging!(
+                info,
+                Type::Timer,
+                "Scheduling {} startup subscription update(s)",
+                uids.len()
+            );
+            AsyncHandler::spawn(move || async move {
+                // Let the core and background resolvers settle before fetching subscriptions.
+                sleep(Duration::from_secs(20)).await;
+                for uid in uids {
+                    if crate::core::handle::Handle::global().is_exiting() {
+                        break;
+                    }
+                    logging!(debug, Type::Timer, "Running startup subscription update: uid={}", uid);
+                    // Reuse the timer task path so resolve waits and start/completed events stay
+                    // consistent with scheduled updates.
+                    Self::async_task(&uid).await;
+                    sleep(Duration::from_millis(500)).await;
+                }
+            });
+        }
+
         logging!(info, Type::Timer, "Timer initialization completed");
         Ok(())
     }
@@ -204,18 +263,32 @@ impl Timer {
     }
 
     async fn gen_map(&self) -> HashMap<String, TaskSchedule> {
-        if let Some(items) = Config::profiles().await.data_arc().items.as_ref() {
-            return Self::gen_map_from_items(items);
-        }
-
-        HashMap::new()
+        let profiles = Config::profiles().await;
+        let profiles_guard = profiles.data_arc();
+        let Some(items) = profiles_guard.items.as_ref() else {
+            return HashMap::new();
+        };
+        let verge = Config::verge().await.data_arc();
+        let only_current = verge
+            .subscription_settings
+            .as_ref()
+            .and_then(|settings| settings.update_only_current)
+            .unwrap_or(false);
+        Self::gen_map_from_items(items, profiles_guard.current.as_ref(), only_current)
     }
 
-    fn gen_map_from_items(items: &[PrfItem]) -> HashMap<String, TaskSchedule> {
+    fn gen_map_from_items(
+        items: &[PrfItem],
+        current: Option<&String>,
+        only_current: bool,
+    ) -> HashMap<String, TaskSchedule> {
         let now = chrono::Local::now().timestamp();
         let mut new_map = HashMap::new();
 
         for item in items {
+            if only_current && item.uid.as_ref() != current {
+                continue;
+            }
             if let Some(option) = item.option.as_ref()
                 && let (Some(interval), Some(uid)) = (option.update_interval, &item.uid)
                 && option.allow_auto_update.unwrap_or(true)
@@ -552,7 +625,7 @@ mod tests {
             remote_profile("missing-interval", Some(true), None),
         ];
 
-        let map = Timer::gen_map_from_items(&items);
+        let map = Timer::gen_map_from_items(&items, None, false);
 
         assert_eq!(map.len(), 2);
         assert_eq!(map.get("enabled").map(|s| s.interval_minutes), Some(30));

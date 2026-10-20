@@ -9,6 +9,35 @@
     "title": "Settings"
   },
   "sections": {
+    "subscription": {
+      "title": "Subscription & Nodes",
+      "fields": {
+        "updates": "Subscription updates",
+        "health": "Scheduled testing & health",
+        "display": "Node display",
+        "info": "Subscription information"
+      },
+      "summaries": {
+        "updates": "Default update interval: {{interval}} mins",
+        "healthEnabled": "Background checks every {{interval}} mins",
+        "healthDisabled": "Scheduled health checks are off",
+        "display": "Control timeout, untested, unhealthy, and slow nodes",
+        "infoEnabled": "Traffic visible · expiry warning {{days}} days ahead",
+        "infoDisabled": "Subscription information hidden"
+      }
+    },
+    "sync": {
+      "title": "Cloud Sync",
+      "fields": {
+        "settings": "Sync settings"
+      },
+      "summaries": {
+        "enabled": "Enabled · last sync {{time}}",
+        "disabled": "Disabled",
+        "never": "never",
+        "lastError": "Last error: {{error}}"
+      }
+    },
     "system": {
       "title": "System Setting",
       "toggles": {
@@ -194,7 +223,7 @@
           "versionCopied": "Version copied to clipboard"
         },
         "fields": {
-          "backupSetting": "Backup Setting",
+          "backupSetting": "Backup & Sync",
           "runtimeConfig": "Runtime Config",
           "openConfDir": "Open Conf Dir",
           "openCoreDir": "Open Core Dir",
@@ -326,7 +355,7 @@
       }
     },
     "backup": {
-      "title": "Backup Setting",
+      "title": "Backup & Sync",
       "tabs": {
         "local": "Local backup",
         "webdav": "WebDAV backup"
@@ -404,6 +433,136 @@
         "rowsPerPage": "Rows per page"
       }
     },
+    "sync": {
+      "title": "Cloud Sync",
+      "description": "Sync user-owned configuration through the WebDAV directory clash-verge-sync. Fetched proxy content, traffic, expiry, and device-local settings are never uploaded. This is not the backup feature: backups store full manual snapshots under clash-verge-rev-backup.",
+      "sections": {
+        "status": "Sync status",
+        "connection": "WebDAV connection",
+        "scopes": "Sync scopes",
+        "behavior": "Sync behavior",
+        "security": "Security",
+        "conflicts": "Conflict copies"
+      },
+      "fields": {
+        "enabled": "Enable scheduled sync",
+        "state": "State",
+        "lastRevision": "Last revision",
+        "lastSyncedAt": "Last sync",
+        "remote": "Cloud",
+        "lastError": "Last error",
+        "webdavUrl": "WebDAV server URL",
+        "username": "Username",
+        "password": "Password",
+        "mode": "Sync mode",
+        "interval": "Interval (minutes)",
+        "onStartup": "Sync on startup",
+        "onChange": "Sync after local changes",
+        "conflictPolicy": "Conflict policy",
+        "deviceName": "Device name",
+        "encrypt": "Encrypt cloud payload",
+        "encryptionPassword": "Payload password",
+        "dangerAcceptInvalidCerts": "Accept invalid certificates"
+      },
+      "helpers": {
+        "enabled": "Runs in the background and never restarts the app.",
+        "reuseBackupAccount": "Reuses the WebDAV account from Backup & Sync. Credentials stay on this device and are never synced.",
+        "configureInBackup": "Configure or change the WebDAV account in Backup & Sync first.",
+        "testSavedAccount": "Test connection uses the saved account; save changes first.",
+        "scopeSubscriptions": "Names, URLs, update options, and ordering. Proxy content is fetched locally.",
+        "scopeOverrides": "Global and per-profile Script, Merge, Proxies, and Groups overrides.",
+        "scopeCustomRules": "custom-rules.yaml rules together with their override dependencies.",
+        "scopeSettings": "Optional shared settings whitelist. Device-local settings stay local.",
+        "scopesNever": "Fetched proxy content is never synced; each device fetches subscriptions from its own URL.",
+        "interval": "Minimum 15 minutes.",
+        "onStartup": "Runs after the app finishes resolving.",
+        "onChange": "Debounced after local subscription or override edits.",
+        "deviceName": "Defaults to the system hostname, up to 32 characters.",
+        "encryption": "Optional. The payload password is stored only on this device.",
+        "dangerAcceptInvalidCerts": "Only enable for a self-signed certificate you trust."
+      },
+      "options": {
+        "mode": {
+          "twoWay": "Two-way",
+          "upload": "Upload only",
+          "download": "Download only"
+        },
+        "conflictPolicy": {
+          "lastModified": "Last modified wins",
+          "local": "Keep local",
+          "remote": "Keep cloud",
+          "ask": "Ask"
+        },
+        "scopes": {
+          "subscriptions": "Subscriptions",
+          "overrides": "Overrides",
+          "customRules": "Custom rules",
+          "settings": "App settings"
+        }
+      },
+      "actions": {
+        "syncNow": "Sync now",
+        "testConnection": "Test connection",
+        "viewHistory": "View cloud history",
+        "saveConnection": "Save connection",
+        "enableMissingScopes": "Enable missing scopes",
+        "uploadLocal": "Upload local",
+        "downloadCloud": "Download cloud",
+        "restore": "Restore"
+      },
+      "status": {
+        "running": "Syncing…",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "never": "Never",
+        "remoteUnknown": "Not checked",
+        "remoteUnavailable": "Unavailable",
+        "remoteAvailable": "Available · revision {{revision}}",
+        "remoteEmpty": "Available · no sync data yet",
+        "firstSyncTitle": "First sync",
+        "firstSyncDescription": "Choose the baseline for the first sync. The cloud keeps revision history, and local data is backed up before a download is applied.",
+        "noConflicts": "No conflict copies"
+      },
+      "confirm": {
+        "firstSyncTitle": "Start first sync",
+        "firstSyncUpload": "Upload this device's configuration as the cloud baseline?",
+        "firstSyncDownload": "Download the cloud configuration and apply it to this device?",
+        "restoreTitle": "Restore cloud snapshot",
+        "restore": "Restore revision {{revision}}? Local data is backed up before applying, and the app will not restart automatically."
+      },
+      "history": {
+        "title": "Cloud sync history",
+        "helper": "Snapshots under clash-verge-sync/history. Restoring publishes the snapshot as a new revision without restarting the app.",
+        "empty": "No cloud snapshots",
+        "revision": "Revision {{revision}}",
+        "device": "Device: {{device}}",
+        "unknownDevice": "Unknown device"
+      },
+      "messages": {
+        "connectionRequired": "URL, username, and password are required",
+        "invalidUrl": "Invalid WebDAV URL",
+        "connectionSaved": "WebDAV connection saved",
+        "connectionSaveFailed": "Failed to save the WebDAV connection: {{error}}",
+        "testSuccess": "WebDAV connection works",
+        "testFailed": "WebDAV connection test failed: {{error}}",
+        "syncUploaded": "Uploaded cloud revision {{revision}}",
+        "syncDownloaded": "Applied cloud revision {{revision}}",
+        "syncMerged": "Merged cloud revision {{revision}}",
+        "syncRestored": "Snapshot restored",
+        "syncUpToDate": "Already up to date",
+        "conflictsDetected": "Conflicts were resolved automatically; older copies are kept under conflicts.",
+        "scopeRequired": "Keep at least one sync scope enabled",
+        "scopeDependency": "Custom rules require the overrides scope so their groups and providers are synced",
+        "scopeMismatch": "The cloud contains scopes this device does not enable ({{scopes}}). Enable them before uploading to avoid deleting cloud data.",
+        "syncFailed": "Cloud sync failed: {{error}}",
+        "encryptionPasswordMissing": "Set a payload password before enabling encryption or syncing",
+        "plaintextWarning": "Encryption is off. Subscription URLs, scripts, and custom rules will be stored unencrypted on the WebDAV server.",
+        "historyFailed": "Failed to load cloud sync history: {{error}}",
+        "restoreFailed": "Failed to restore the snapshot: {{error}}",
+        "historyRestored": "Snapshot restored and published as a new revision",
+        "restoreNoRestart": "Restore applied; the app was not restarted"
+      }
+    },
     "misc": {
       "title": "Miscellaneous",
       "fields": {
@@ -414,17 +573,11 @@
         "autoCheckUpdate": "Auto Check Update",
         "enableBuiltinEnhanced": "Enable Builtin Enhanced",
         "proxyLayoutColumns": "Proxy Layout Columns",
-        "autoLogClean": "Auto Log Clean",
-        "autoDelayDetection": "Auto Delay Detection",
-        "autoDelayDetectionInterval": "Auto Delay Detection Interval",
-        "defaultLatencyTest": "Default Latency Test",
-        "defaultLatencyTimeout": "Default Latency Timeout"
+        "autoLogClean": "Auto Log Clean"
       },
       "tooltips": {
         "autoCloseConnections": "Terminate established connections when the proxy group selection or proxy mode changes",
-        "enableBuiltinEnhanced": "Compatibility handling for the configuration file",
-        "autoDelayDetection": "Periodically test the current node latency in the background",
-        "defaultLatencyTest": "Used for HTTP client request testing only and won't make a difference to the configuration file"
+        "enableBuiltinEnhanced": "Compatibility handling for the configuration file"
       },
       "options": {
         "proxyLayoutColumns": {
@@ -434,6 +587,74 @@
           "never": "Never Clean",
           "retainDays": "Retain {{n}} Days"
         }
+      }
+    },
+    "subscription": {
+      "title": "Subscription & Nodes",
+      "sections": {
+        "updates": "Subscription updates",
+        "health": "Scheduled testing & health",
+        "display": "Node display",
+        "info": "Subscription information"
+      },
+      "fields": {
+        "defaultUpdateInterval": "Default update interval",
+        "updateOnStartup": "Update on startup",
+        "updateOnlyCurrent": "Update only current subscription",
+        "notifyOnFailure": "Notify on update failure",
+        "healthEnabled": "Enable scheduled testing",
+        "testInterval": "Link test interval",
+        "deepTestInterval": "Real-site test interval",
+        "scope": "Test scope",
+        "verifyOnSelect": "Verify the node after selection",
+        "runNow": "Run a health check now",
+        "latencyTestUrl": "Default latency test URL",
+        "latencyTimeout": "Default latency timeout",
+        "l1Targets": "Link test targets",
+        "l2Targets": "Real-site test targets",
+        "targetUrl": "URL",
+        "targetExpected": "Expected",
+        "targetKeyword": "Keyword",
+        "targetTimeout": "Timeout",
+        "hideTimeout": "Hide timeout nodes",
+        "hideUntested": "Hide untested nodes",
+        "hideUnhealthy": "Hide unhealthy nodes",
+        "hideSlow": "Hide nodes slower than",
+        "defaultSort": "Default sort",
+        "showTraffic": "Show subscription traffic",
+        "expiryWarningDays": "Expiry warning days"
+      },
+      "actions": {
+        "addTarget": "Add target",
+        "runNow": "Run now"
+      },
+      "feedback": {
+        "healthStarted": "Health check started"
+      },
+      "options": {
+        "scope": {
+          "currentNode": "Each group's selected node",
+          "currentGroup": "All groups",
+          "allGroups": "All groups + GLOBAL"
+        },
+        "sort": {
+          "default": "Default",
+          "delay": "Delay",
+          "name": "Name"
+        }
+      },
+      "validation": {
+        "updateInterval": "Enter 1440-43200 minutes",
+        "l1Interval": "Enter 1-1440 minutes",
+        "l2Interval": "Enter 1-1440 minutes",
+        "latencyTimeout": "Enter 1000-30000 milliseconds",
+        "hideSlowMs": "Enter 0-60000 milliseconds",
+        "expiryWarningDays": "Enter 1-365 days",
+        "url": "Enter a valid http:// or https:// URL",
+        "expected": "Use a status code or a range such as 200 or 200-299",
+        "targetTimeout": "Enter 500-60000 milliseconds",
+        "requireL1": "Add at least one link test target",
+        "requireL2": "Add at least one real-site target"
       }
     },
     "update": {

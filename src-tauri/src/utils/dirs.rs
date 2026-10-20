@@ -24,6 +24,12 @@ pub static PROFILE_YAML: &str = "profiles.yaml";
 /// Marks that the one-shot raise of too-short auto-update intervals has already run.
 pub static UPDATE_INTERVAL_MIGRATED: &str = ".update-interval-migrated";
 
+pub static SYNC_DIR: &str = "sync";
+pub static SYNC_STATE_FILE: &str = "sync-state.json";
+pub static SYNC_STAGING_DIR: &str = "staging";
+pub static SYNC_CONFLICTS_DIR: &str = "conflicts";
+pub static SYNC_HISTORY_DIR: &str = "history";
+
 /// Uses the same platform data resolver as Tauri, including before its handle exists.
 pub fn app_home_dir() -> Result<PathBuf> {
     ::dirs::data_dir()
@@ -112,6 +118,35 @@ pub fn profiles_path() -> Result<PathBuf> {
 
 pub fn update_interval_migrated_path() -> Result<PathBuf> {
     Ok(app_home_dir()?.join(UPDATE_INTERVAL_MIGRATED))
+}
+
+/// Local sync bookkeeping, staging, conflicts, and cached histories.
+pub fn sync_dir() -> Result<PathBuf> {
+    let dir = app_home_dir()?.join(SYNC_DIR);
+    fs::create_dir_all(&dir)?;
+    Ok(dir)
+}
+
+pub fn sync_state_path() -> Result<PathBuf> {
+    Ok(sync_dir()?.join(SYNC_STATE_FILE))
+}
+
+pub fn sync_staging_dir() -> Result<PathBuf> {
+    let dir = sync_dir()?.join(SYNC_STAGING_DIR);
+    fs::create_dir_all(&dir)?;
+    Ok(dir)
+}
+
+pub fn sync_conflicts_dir() -> Result<PathBuf> {
+    let dir = sync_dir()?.join(SYNC_CONFLICTS_DIR);
+    fs::create_dir_all(&dir)?;
+    Ok(dir)
+}
+
+pub fn sync_history_dir() -> Result<PathBuf> {
+    let dir = sync_dir()?.join(SYNC_HISTORY_DIR);
+    fs::create_dir_all(&dir)?;
+    Ok(dir)
 }
 
 #[cfg(target_os = "macos")]

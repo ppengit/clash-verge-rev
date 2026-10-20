@@ -12,6 +12,7 @@ import { BaseErrorBoundary } from './components/base'
 import { router } from './pages/_routers'
 import { preloadHomePageCards } from './pages/home'
 import { AppDataProvider } from './providers/app-data-provider'
+import { NodeHealthProvider } from './providers/node-health-provider'
 import { WindowProvider } from './providers/window'
 import { FALLBACK_LANGUAGE, initializeLanguage } from './services/i18n'
 import {
@@ -52,7 +53,9 @@ const initializeApp = (initialThemeMode: 'light' | 'dark') => {
           <SWRConfig value={swrConfig}>
             <WindowProvider>
               <AppDataProvider>
-                <RouterProvider router={router} />
+                <NodeHealthProvider>
+                  <RouterProvider router={router} />
+                </NodeHealthProvider>
               </AppDataProvider>
             </WindowProvider>
           </SWRConfig>

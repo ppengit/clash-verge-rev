@@ -8,6 +8,8 @@ pub mod logger;
 pub mod manager;
 #[cfg(target_os = "macos")]
 pub mod network_watch;
+pub mod node_health;
+pub mod node_health_probe;
 pub mod notify;
 pub(crate) mod owner_identity;
 pub mod proxy_control;
@@ -15,6 +17,7 @@ pub mod proxy_view;
 pub mod runstate;
 pub(crate) mod runtime_bundle;
 pub mod service;
+pub mod sync;
 pub mod sysopt;
 pub mod timer;
 pub mod tray;

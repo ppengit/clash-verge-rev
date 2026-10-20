@@ -8,7 +8,25 @@
         "update": "Atualizar"
       }
     },
-    "title": "Regras"
+    "title": "Regras",
+    "actions": {
+      "addRule": "Add Rule",
+      "menu": "Rule actions",
+      "copyRule": "Copy rule",
+      "rebindPolicy": "Change policy",
+      "deleteRule": "Delete rule"
+    },
+    "badges": {
+      "subscription": "Subscription",
+      "legacy": "Legacy custom",
+      "custom": "Custom",
+      "global": "Global"
+    },
+    "filters": {
+      "all": "All",
+      "custom": "Custom",
+      "subscription": "Subscription"
+    }
   },
   "feedback": {
     "notifications": {
@@ -18,10 +36,49 @@
         "genericError": "Falha na atualização: {{message}}",
         "none": "Nenhum provedor disponível para atualizar",
         "allUpdated": "Todos os provedores foram atualizados com sucesso"
-      }
+      },
+      "ruleCopied": "Rule copied",
+      "ruleDeleted": "Rule deleted"
     }
   },
   "modals": {
+    "quickAdd": {
+      "title": "Add Rule",
+      "currentProfile": "current",
+      "advanced": "Advanced",
+      "applyToAll": "Apply to all subscriptions (built-in policies only)",
+      "preview": "Preview",
+      "duplicateHint": "An identical rule already exists ({{id}}).",
+      "subscriptionHint": "A subscription rule already matches this value. Your rule will be inserted in the chosen position.",
+      "fields": {
+        "profile": "Target profile",
+        "type": "Rule type",
+        "value": "Rule value",
+        "policy": "Policy",
+        "position": "Position"
+      },
+      "position": {
+        "prepend": "Prepend (top)",
+        "append": "Append (before MATCH)"
+      },
+      "actions": {
+        "add": "Add",
+        "undo": "Undo"
+      },
+      "validation": {
+        "profileRequired": "Choose a target profile",
+        "valueRequired": "Rule value is required",
+        "invalidValue": "Rule value is not valid for this type",
+        "policyRequired": "Choose a policy",
+        "unknownPolicy": "Policy does not exist in this profile",
+        "duplicate": "An identical rule already exists in this position",
+        "globalBuiltinOnly": "Global rules support built-in policies only"
+      },
+      "feedback": {
+        "added": "Rule added. It is applied immediately for the current profile.",
+        "undone": "Rule removed"
+      }
+    },
     "editor": {
       "form": {
         "labels": {

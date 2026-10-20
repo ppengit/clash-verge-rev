@@ -13,7 +13,6 @@ import { mutate } from '@/services/mutate'
 import { showNotice } from '@/services/notice-service'
 import getSystem from '@/utils/get-system'
 
-import { BackupViewer } from './mods/backup-viewer'
 import { ConfigViewer } from './mods/config-viewer'
 import { GuardState } from './mods/guard-state'
 import { HotkeyViewer } from './mods/hotkey-viewer'
@@ -69,7 +68,6 @@ const SettingVergeBasic = ({ onError }: Props) => {
   const themeRef = useRef<DialogRef>(null)
   const layoutRef = useRef<DialogRef>(null)
   const updateRef = useRef<DialogRef>(null)
-  const backupRef = useRef<DialogRef>(null)
 
   const onChangeData = (patch: any) => {
     mutateVerge({ ...verge, ...patch }, false)
@@ -98,7 +96,6 @@ const SettingVergeBasic = ({ onError }: Props) => {
       <MiscViewer ref={miscRef} />
       <LayoutViewer ref={layoutRef} />
       <UpdateViewer ref={updateRef} />
-      <BackupViewer ref={backupRef} />
 
       <SettingItem label={t('settings.components.verge.basic.fields.language')}>
         <GuardState

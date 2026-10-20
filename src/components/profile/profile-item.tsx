@@ -32,6 +32,7 @@ import { EditorViewer } from '@/components/profile/editor-viewer'
 import { GroupsEditorViewer } from '@/components/profile/groups-editor-viewer'
 import { RulesEditorViewer } from '@/components/profile/rules-editor-viewer'
 import { useEditorDocument } from '@/hooks/use-editor-document'
+import { useVerge } from '@/hooks/use-verge'
 import {
   getNextUpdateTime,
   readProfileFile,
@@ -41,6 +42,7 @@ import {
 } from '@/services/cmds'
 import { mutate } from '@/services/mutate'
 import { showNotice } from '@/services/notice-service'
+import { handleProfileUpdateReport } from '@/services/profile-update-conflict'
 import {
   useProfileLoadingCache,
   useSetProfileLoading,
@@ -126,6 +128,7 @@ const ProfileItemBase = (props: ProfileItemProps) => {
   )
 
   const { uid, name = 'Profile', extra, updated = 0, option } = itemData
+  const { verge } = useVerge()
 
   const fetchNextUpdateTimeCallback = useCallback(
     async (forceRefresh = false) => {
@@ -243,6 +246,15 @@ const ProfileItemBase = (props: ProfileItemProps) => {
   const hasUrl = !!itemData.url
   const hasExtra = !!extra // only subscription url has extra info
   const hasHome = !!itemData.home // only subscription url has home page
+  const showTraffic = verge?.subscription_info_settings?.show_traffic ?? true
+  const showExtra = hasExtra && showTraffic
+  const expiryWarningDays =
+    verge?.subscription_info_settings?.expiry_warning_days ?? 3
+  const expireAt = extra?.expire ? dayjs(extra.expire * 1000) : null
+  const now = dayjs()
+  const expireSoon = Boolean(
+    expireAt?.isAfter(now) && expireAt.diff(now, 'day') <= expiryWarningDays,
+  )
 
   const { upload = 0, download = 0, total = 0 } = extra ?? {}
   const from = parseUrl(itemData.url!)
@@ -402,10 +414,11 @@ const ProfileItemBase = (props: ProfileItemProps) => {
 
     try {
       const payload = Object.keys(option).length > 0 ? option : undefined
-      await mutate(() => updateProfile(itemData.uid!, payload), {
+      const result = await mutate(() => updateProfile(itemData.uid!, payload), {
         id: `update-profile:${itemData.uid}`,
         errorNotice: false,
       })
+      if (result.ok) handleProfileUpdateReport(itemData.uid!, result.value)
 
       void mutateProfiles()
     } catch {
@@ -821,12 +834,18 @@ const ProfileItemBase = (props: ProfileItemProps) => {
             </>
           }
         </Box>
-        {hasExtra ? (
+        {showExtra ? (
           <Box sx={{ ...boxStyle, fontSize: 14 }}>
             <span title={t('shared.labels.usedTotal')}>
               {parseTraffic(upload + download)} / {parseTraffic(total)}
             </span>
-            <span title={t('shared.labels.expireTime')}>{expire}</span>
+            <Box
+              component="span"
+              title={t('shared.labels.expireTime')}
+              sx={{ color: expireSoon ? 'warning.main' : undefined }}
+            >
+              {expire}
+            </Box>
           </Box>
         ) : (
           <Box sx={{ ...boxStyle, fontSize: 12, justifyContent: 'flex-end' }}>

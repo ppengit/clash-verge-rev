@@ -1,4 +1,6 @@
 import AccessTimeRounded from '@mui/icons-material/AccessTimeRounded'
+import FilterAltOffRounded from '@mui/icons-material/FilterAltOffRounded'
+import FilterAltRounded from '@mui/icons-material/FilterAltRounded'
 import MyLocationRounded from '@mui/icons-material/MyLocationRounded'
 import NetworkCheckRounded from '@mui/icons-material/NetworkCheckRounded'
 import SearchOffRounded from '@mui/icons-material/SearchOffRounded'
@@ -51,7 +53,6 @@ export const ProxyGroupTools = memo(function ProxyGroupTools(props: Props) {
 
   const {
     showType,
-    sortType,
     filterText,
     textState,
     testUrl,
@@ -65,7 +66,16 @@ export const ProxyGroupTools = memo(function ProxyGroupTools(props: Props) {
   const { verge } = useVerge()
   const defaultLatencyUrl =
     verge?.default_latency_test?.trim() ||
-    'http://cp.cloudflare.com/generate_204'
+    'https://cp.cloudflare.com/generate_204'
+  const sortType =
+    headState.sortType ?? verge?.node_display_settings?.default_sort ?? 0
+  const globalHideUnavailable = Boolean(
+    verge?.node_display_settings?.hide_timeout ||
+      verge?.node_display_settings?.hide_unhealthy,
+  )
+  const hideUnavailable = headState.bypassHide
+    ? false
+    : (headState.hideUnavailable ?? globalHideUnavailable)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -258,6 +268,31 @@ export const ProxyGroupTools = memo(function ProxyGroupTools(props: Props) {
           <VisibilityRounded fontSize="inherit" />
         ) : (
           <VisibilityOffRounded fontSize="inherit" />
+        )}
+      </IconButton>
+
+      <IconButton
+        size="small"
+        color="inherit"
+        title={
+          hideUnavailable
+            ? t('proxies.page.tooltips.showAllNodes')
+            : t('proxies.page.tooltips.hideUnavailableNodes')
+        }
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          onHeadState(
+            hideUnavailable
+              ? { hideUnavailable: false, bypassHide: true }
+              : { hideUnavailable: true, bypassHide: false },
+          )
+        }}
+      >
+        {hideUnavailable ? (
+          <FilterAltRounded fontSize="inherit" />
+        ) : (
+          <FilterAltOffRounded fontSize="inherit" />
         )}
       </IconButton>
 

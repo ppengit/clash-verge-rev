@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "Proxy Count",
       "delayCheckReset": "فحص التأخير لإلغاء الثابت",
-      "nodeCount": "{{count}} عقدة"
+      "nodeCount": "{{count}} عقدة",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "الموقع",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "رابط فحص التأخير",
       "showBasic": "إعدادات الوكيل الأساسية",
       "showDetail": "تفاصيل الوكيل",
-      "filter": "تصفية"
+      "filter": "تصفية",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "رابط فحص التأخير"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "لا توجد مجموعات وكيل متاحة",
       "noProxies": "لا توجد وكلاء",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "لم يتم استيراد أي اشتراك",
         "description": "لا يوجد محتوى لعرضه في صفحة الوكلاء. انتقل إلى صفحة «الملفات الشخصية» لاستيراد اشتراك وتفعيله."
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "الانتقال إلى الملفات الشخصية",
         "restartCore": "إعادة تشغيل النواة",
-        "openLogs": "فتح مجلد السجلات"
+        "openLogs": "فتح مجلد السجلات",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Test URL must start with http:// or https://"
+      "invalidTestUrl": "Test URL must start with http:// or https://",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

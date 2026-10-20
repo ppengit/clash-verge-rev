@@ -135,6 +135,12 @@ pub async fn quit() {
     // 设置退出标志
     handle::Handle::global().set_is_exiting();
 
+    // No sync starts after exit; in-flight transfers are bounded by their own timeouts.
+    crate::core::sync::SyncManager::global().shutdown().await;
+
+    // Stop health probes before the core goes away; bounded so a hung request cannot delay exit.
+    crate::core::node_health::NodeHealthManager::global().shutdown().await;
+
     Config::apply_all_and_save_file().await;
 
     let cleanup_result = clean_async().await;

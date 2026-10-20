@@ -114,7 +114,10 @@ async fn import_subscription(url: &str, name: Option<&String>) {
 
 async fn fetch_profile_item(url: &str, name: Option<&String>) -> Option<PrfItem> {
     match PrfItem::from_url(url, name, None, None).await {
-        Ok(item) => Some(item),
+        Ok(mut item) => {
+            crate::config::profiles::apply_default_update_interval(&mut item).await;
+            Some(item)
+        }
         Err(e) => {
             logging!(error, Type::Config, "failed to parse profile from url: {:?}", e);
             handle::Handle::notice(NoticeStatus::ImportSubUrlError, e.to_string());

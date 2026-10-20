@@ -1,5 +1,9 @@
 use crate::constants::files::DNS_CONFIG;
-use crate::{config::Config, process::AsyncHandler, utils::dirs};
+use crate::{
+    config::Config,
+    process::AsyncHandler,
+    utils::{dirs, help},
+};
 use anyhow::Error;
 use arc_swap::{ArcSwap, ArcSwapOption};
 use backon::{ConstantBuilder, Retryable as _};
@@ -261,7 +265,7 @@ impl WebDavClient {
     }
 }
 
-fn parse_webdav_list(xml: &str) -> Result<Vec<ListEntity>, reqwest_dav::Error> {
+pub(crate) fn parse_webdav_list(xml: &str) -> Result<Vec<ListEntity>, reqwest_dav::Error> {
     // Some WebDAV servers emit RFC 2822's numeric UTC offset instead of HTTP-date's `GMT`.
     let normalized_xml = xml.replace(" +0000</", " GMT</");
     let multi_status: ListMultiStatus = reqwest_dav::re_exports::serde_xml_rs::from_str(&normalized_xml)?;
@@ -271,7 +275,11 @@ fn parse_webdav_list(xml: &str) -> Result<Vec<ListEntity>, reqwest_dav::Error> {
 pub async fn create_backup() -> Result<(String, PathBuf), Error> {
     let now = chrono::Local::now().format("%Y-%m-%d_%H-%M-%S").to_string();
     let zip_file_name: String = format!("{OS}-backup-{now}.zip").into();
-    let zip_path = temp_dir().join(zip_file_name.as_str());
+    let zip_path = temp_dir().join(format!(
+        "{}-{}.zip",
+        zip_file_name.trim_end_matches(".zip"),
+        help::get_uid("b")
+    ));
 
     let value = zip_path.clone();
     let file = AsyncHandler::spawn_blocking(move || std::fs::File::create(&value)).await??;
@@ -294,18 +302,29 @@ pub async fn create_backup() -> Result<(String, PathBuf), Error> {
             }
         }
     }
-    zip.start_file(dirs::CLASH_CONFIG, options)?;
-    zip.write_all(fs::read(dirs::clash_path()?).await?.as_slice())?;
-
-    let verge_text = fs::read_to_string(dirs::verge_path()?).await?;
-    let mut verge_config: serde_json::Value = serde_yaml_ng::from_str(&verge_text)?;
-    if let Some(obj) = verge_config.as_object_mut() {
-        obj.remove("webdav_username");
-        obj.remove("webdav_password");
-        obj.remove("webdav_url");
+    let clash_path = dirs::clash_path()?;
+    if clash_path.exists() {
+        zip.start_file(dirs::CLASH_CONFIG, options)?;
+        zip.write_all(fs::read(&clash_path).await?.as_slice())?;
     }
-    zip.start_file(dirs::VERGE_CONFIG, options)?;
-    zip.write_all(serde_yaml_ng::to_string(&verge_config)?.as_bytes())?;
+
+    let verge_path = dirs::verge_path()?;
+    if verge_path.exists() {
+        let verge_text = fs::read_to_string(&verge_path).await?;
+        let mut verge_config: serde_json::Value = serde_yaml_ng::from_str(&verge_text)?;
+        if let Some(obj) = verge_config.as_object_mut() {
+            obj.remove("webdav_username");
+            obj.remove("webdav_password");
+            obj.remove("webdav_url");
+            // The sync payload password is encrypted with the local key and must not travel
+            // inside a backup that can be restored on another device.
+            if let Some(sync) = obj.get_mut("sync_settings").and_then(serde_json::Value::as_object_mut) {
+                sync.remove("password");
+            }
+        }
+        zip.start_file(dirs::VERGE_CONFIG, options)?;
+        zip.write_all(serde_yaml_ng::to_string(&verge_config)?.as_bytes())?;
+    }
 
     let dns_config_path = dirs::app_home_dir()?.join(DNS_CONFIG);
     if dns_config_path.exists() {
@@ -313,8 +332,18 @@ pub async fn create_backup() -> Result<(String, PathBuf), Error> {
         zip.write_all(fs::read(&dns_config_path).await?.as_slice())?;
     }
 
-    zip.start_file(dirs::PROFILE_YAML, options)?;
-    zip.write_all(fs::read(dirs::profiles_path()?).await?.as_slice())?;
+    // Sync can rewrite custom rules, so a full backup has to contain them.
+    let custom_rules_path = crate::enhance::custom_rules::custom_rules_path()?;
+    if custom_rules_path.exists() {
+        zip.start_file(crate::enhance::custom_rules::FILE_NAME, options)?;
+        zip.write_all(fs::read(&custom_rules_path).await?.as_slice())?;
+    }
+
+    let profiles_path = dirs::profiles_path()?;
+    if profiles_path.exists() {
+        zip.start_file(dirs::PROFILE_YAML, options)?;
+        zip.write_all(fs::read(&profiles_path).await?.as_slice())?;
+    }
     zip.finish()?;
     Ok((zip_file_name, zip_path))
 }

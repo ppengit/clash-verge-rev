@@ -11,6 +11,8 @@ import {
   type ResolvedProxyMember,
 } from '@/types/proxy-view'
 
+import { HealthBadge } from './health-badge'
+
 interface Props {
   group: ProxyGroupView
   member: ResolvedProxyMember
@@ -151,6 +153,7 @@ export const ProxyItemMini = (props: Props) => {
                 SMUX
               </TypeBox>
             )}
+            {!unresolved && <HealthBadge group={group.name} node={name} />}
           </Box>
         )}
       </Box>

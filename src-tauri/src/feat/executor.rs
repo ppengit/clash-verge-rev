@@ -6,6 +6,7 @@ use crate::{
         snapshot::{capture_config_files, restore_files},
     },
     core::auto_backup::AutoBackupManager,
+    core::node_health::NodeHealthManager,
     core::{
         CoreManager, SilentUpdater, autostart, hotkey, lightweight, logger, manager::ConfigUpdateGuard, proxy_control,
         tray,
@@ -108,6 +109,40 @@ async fn ensure_effect(
     Ok(())
 }
 
+async fn refresh_after_verge_patch(patch: &IVerge, effects: &Effects) {
+    if patch.auto_check_update == Some(false) {
+        SilentUpdater::global().discard_pending();
+    }
+    if effects.contains(&Effect::ClashConfig) {
+        announce(Refresh::Clash);
+    }
+    logging_error!(Type::Backup, AutoBackupManager::global().refresh_settings().await);
+    if patch.sync_settings.is_some()
+        || patch.webdav_url.is_some()
+        || patch.webdav_username.is_some()
+        || patch.webdav_password.is_some()
+    {
+        logging_error!(
+            Type::Backup,
+            crate::core::sync::SyncManager::global().refresh_settings().await
+        );
+    }
+    if patch.subscription_settings.is_some()
+        || patch.node_health_settings.is_some()
+        || patch.node_display_settings.is_some()
+        || patch.subscription_info_settings.is_some()
+        // Legacy fields still feed the health defaults until the old UI is removed.
+        || patch.enable_auto_delay_detection.is_some()
+        || patch.auto_delay_detection_interval_minutes.is_some()
+    {
+        logging_error!(Type::Network, NodeHealthManager::global().refresh_settings().await);
+    }
+    if patch.subscription_settings.is_some() {
+        logging_error!(Type::Timer, crate::core::timer::Timer::global().refresh().await);
+    }
+    announce(Refresh::Verge);
+}
+
 pub(super) async fn apply(config_write: &MutexGuard<'_, ()>, patch: Patch<'_>, effects: Effects) -> Result<()> {
     let manager = CoreManager::global();
     let update = manager.claim_config_update(config_write)?;
@@ -162,16 +197,7 @@ pub(super) async fn apply(config_write: &MutexGuard<'_, ()>, patch: Patch<'_>, e
     }
     transaction.commit();
     match patch {
-        Patch::Verge { patch, .. } => {
-            if patch.auto_check_update == Some(false) {
-                SilentUpdater::global().discard_pending();
-            }
-            if effects.contains(&Effect::ClashConfig) {
-                announce(Refresh::Clash);
-            }
-            logging_error!(Type::Backup, AutoBackupManager::global().refresh_settings().await);
-            announce(Refresh::Verge);
-        }
+        Patch::Verge { patch, .. } => refresh_after_verge_patch(patch, &effects).await,
         Patch::Clash(_) => announce(Refresh::Clash),
     }
     Ok(())

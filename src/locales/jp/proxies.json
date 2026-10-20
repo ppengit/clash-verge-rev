@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "ノード数",
       "delayCheckReset": "遅延テストを実行して固定を解除する",
-      "nodeCount": "{{count}} ノード"
+      "nodeCount": "{{count}} ノード",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "現在のノード",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "遅延テストURL",
       "showBasic": "ノードの詳細を隠す",
       "showDetail": "ノードの詳細を表示する",
-      "filter": "ノードをフィルタリング"
+      "filter": "ノードをフィルタリング",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "遅延テストURL"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "利用可能なプロキシグループがありません",
       "noProxies": "プロキシがありません",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "サブスクリプションがインポートされていません",
         "description": "プロキシページに表示する内容がありません。プロファイルページでサブスクリプションをインポートして有効化してください。"
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "プロファイルへ移動",
         "restartCore": "コアを再起動",
-        "openLogs": "ログフォルダーを開く"
+        "openLogs": "ログフォルダーを開く",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Test URL must start with http:// or https://"
+      "invalidTestUrl": "Test URL must start with http:// or https://",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

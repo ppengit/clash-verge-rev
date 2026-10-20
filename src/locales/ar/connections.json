@@ -24,7 +24,8 @@
     "actions": {
       "active": "Active",
       "closed": "Closed",
-      "closeConnection": "إغلاق الاتصال"
+      "closeConnection": "إغلاق الاتصال",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "الأعمدة",

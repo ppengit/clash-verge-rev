@@ -169,9 +169,19 @@ pub fn mask_url(url: &str) -> String {
         .unwrap_or(path_part.len());
 
     let scheme_and_host = &path_part[..host_end];
+    let scheme_and_host = match scheme_and_host.find("://") {
+        Some(scheme_end) => {
+            let (scheme, authority) = scheme_and_host.split_at(scheme_end + 3);
+            match authority.rfind('@') {
+                Some(at) => format!("{scheme}***@{}", &authority[at + 1..]),
+                None => scheme_and_host.to_owned(),
+            }
+        }
+        None => scheme_and_host.to_owned(),
+    };
     let path = &path_part[host_end..]; // starts with '/' or empty
 
-    let mut result = scheme_and_host.to_owned();
+    let mut result = scheme_and_host;
 
     if !path.is_empty() {
         let masked: Vec<&str> = path

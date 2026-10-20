@@ -24,7 +24,8 @@
     "actions": {
       "active": "Active",
       "closed": "Closed",
-      "closeConnection": "연결 닫기"
+      "closeConnection": "연결 닫기",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "열",

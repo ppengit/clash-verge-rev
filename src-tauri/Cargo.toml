@@ -66,7 +66,7 @@ nanoid = "0.5"
 chrono = { workspace = true }
 boa_engine = "0.22.0"
 percent-encoding = "2.3.2"
-reqwest = { workspace = true }
+reqwest = { workspace = true, features = ["stream"] }
 regex = { workspace = true }
 sysproxy = { git = "https://github.com/clash-verge-rev/sysproxy-rs.git", branch = "main", features = [
   "guard",
@@ -84,6 +84,7 @@ flate2 = "1.1.10"
 reqwest_dav = "0.3.3"
 aes-gcm = { version = "0.11.1" }
 base64 = "0.23.1"
+pbkdf2 = "0.13.0"
 minisign-verify = "0.3.0"
 sha2 = "0.11.1"
 getrandom = "0.4.3"

@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "프록시 개수",
       "delayCheckReset": "고정 취소를 위한 지연 확인",
-      "nodeCount": "노드 {{count}}개"
+      "nodeCount": "노드 {{count}}개",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "위치 찾기",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "지연 확인 URL",
       "showBasic": "프록시 기본",
       "showDetail": "프록시 상세",
-      "filter": "필터"
+      "filter": "필터",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "지연 확인 URL"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "사용 가능한 프록시 그룹이 없습니다",
       "noProxies": "프록시 없음",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "가져온 구독이 없습니다",
         "description": "프록시 페이지에 표시할 내용이 없습니다. 프로필 페이지에서 구독을 가져와 활성화하세요."
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "프로필로 이동",
         "restartCore": "코어 재시작",
-        "openLogs": "로그 폴더 열기"
+        "openLogs": "로그 폴더 열기",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Test URL must start with http:// or https://"
+      "invalidTestUrl": "Test URL must start with http:// or https://",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

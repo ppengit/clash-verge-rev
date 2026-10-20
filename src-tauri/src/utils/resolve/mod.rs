@@ -89,8 +89,12 @@ async fn resolve_setup() {
         init_hotkey(),
         init_auto_lightweight_boot(),
         init_auto_backup(),
+        init_node_health(),
         init_silent_updater(),
     );
+
+    // Subscriptions, timers, and health are ready before a scheduled sync can touch them.
+    init_sync().await;
 
     Handle::refresh_clash();
     refresh_tray_menu().await;
@@ -164,6 +168,17 @@ async fn init_auto_lightweight_boot() {
 
 async fn init_auto_backup() {
     logging_error!(Type::Setup, AutoBackupManager::global().init().await);
+}
+
+async fn init_sync() {
+    logging_error!(Type::Setup, crate::core::sync::SyncManager::global().init().await);
+}
+
+async fn init_node_health() {
+    logging_error!(
+        Type::Setup,
+        crate::core::node_health::NodeHealthManager::global().init().await
+    );
 }
 
 async fn init_silent_updater() {

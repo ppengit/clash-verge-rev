@@ -11,13 +11,18 @@ import { ProxySortType } from './use-filter-sort'
 export interface HeadState {
   open?: boolean
   showType: boolean
-  sortType: ProxySortType
+  /** Undefined follows `node_display_settings.default_sort`. */
+  sortType?: ProxySortType
   filterText: string
   filterMatchCase?: boolean
   filterMatchWholeWord?: boolean
   filterUseRegularExpression?: boolean
   textState: 'url' | 'filter' | null
   testUrl: string
+  /** Undefined follows the global node display defaults. */
+  hideUnavailable?: boolean
+  /** Per-group "show all" escape hatch override. */
+  bypassHide?: boolean
 }
 
 type HeadStateStorage = Record<string, Record<string, HeadState>>
@@ -26,7 +31,6 @@ const HEAD_STATE_KEY = 'proxy-head-state'
 export const DEFAULT_STATE: HeadState = {
   open: false,
   showType: true,
-  sortType: 0,
   filterText: '',
   filterMatchCase: false,
   filterMatchWholeWord: false,

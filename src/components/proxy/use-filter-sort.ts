@@ -1,6 +1,12 @@
+import type { NodeHealthState } from '@/services/bindings'
 import delayManager from '@/services/delay'
-import { memberDetails } from '@/types/proxy-view'
-import { compareByDelay, DEFAULT_DELAY_TIMEOUT } from '@/utils/delay'
+import { isUnhealthyNode, nodeHealthSortRank } from '@/services/node-health'
+import { memberDetails, type ResolvedProxyMember } from '@/types/proxy-view'
+import {
+  classifyDelay,
+  compareByDelay,
+  DEFAULT_DELAY_TIMEOUT,
+} from '@/utils/delay'
 import { compileStringMatcher } from '@/utils/search-matcher'
 
 import type { ResolvedMemberOccurrence } from './use-render-list'
@@ -13,6 +19,25 @@ export type ProxySearchState = {
   useRegularExpression?: boolean
 }
 
+export interface ProxyDisplayFilter {
+  /** Hide timeout and error delays. */
+  hideTimeout?: boolean
+  hideUntested?: boolean
+  /** Hide health states that cannot carry traffic. */
+  hideUnhealthy?: boolean
+  /** Hide measured delays above this value; zero disables the filter. */
+  hideSlowMs?: number
+  /** The group's current node stays visible even when it matches a hide rule. */
+  pinnedNode?: string | null
+  /** Per-group "show all" override. */
+  bypass?: boolean
+}
+
+export interface FilterSortOptions {
+  healthState?: (member: ResolvedProxyMember) => NodeHealthState | undefined
+  display?: ProxyDisplayFilter
+}
+
 export function filterSort(
   proxies: ResolvedMemberOccurrence[],
   groupName: string,
@@ -20,24 +45,108 @@ export function filterSort(
   sortType: ProxySortType,
   latencyTimeout?: number,
   searchState?: ProxySearchState,
+  options?: FilterSortOptions,
 ) {
-  const fp = filterProxies(proxies, groupName, filterText, searchState)
-  const sp = sortProxies(fp, groupName, sortType, latencyTimeout)
+  const fp = filterProxies(
+    proxies,
+    groupName,
+    filterText,
+    searchState,
+    options,
+    latencyTimeout,
+  )
+  const sp = sortProxies(
+    fp,
+    groupName,
+    sortType,
+    latencyTimeout,
+    options?.healthState,
+  )
   return sp
 }
 
 const regex1 = /delay([=<>])(\d+|timeout|error)/i
 const regex2 = /type=(.*)/i
 
+const displayFiltersActive = (display: ProxyDisplayFilter) =>
+  display.hideTimeout ||
+  display.hideUntested ||
+  display.hideUnhealthy ||
+  (typeof display.hideSlowMs === 'number' && display.hideSlowMs > 0)
+
+const isHiddenByDisplay = (
+  member: ResolvedProxyMember,
+  groupName: string,
+  display: ProxyDisplayFilter,
+  healthState?: (member: ResolvedProxyMember) => NodeHealthState | undefined,
+  latencyTimeout?: number,
+) => {
+  if (display.pinnedNode && member.ref.name === display.pinnedNode) return false
+  if (member.kind === 'unresolved') return false
+
+  const health = healthState?.(member)
+  if (display.hideUnhealthy && isUnhealthyNode(health)) return true
+  if (!display.hideTimeout && !display.hideUntested && !display.hideSlowMs) {
+    return false
+  }
+
+  const delay = delayManager.getDelayFix(member, groupName)
+  const timeout =
+    typeof latencyTimeout === 'number' && latencyTimeout > 0
+      ? latencyTimeout
+      : DEFAULT_DELAY_TIMEOUT
+  const delayState = classifyDelay(delay, timeout)
+  if (
+    display.hideTimeout &&
+    (delayState === 'timeout' || delayState === 'error')
+  ) {
+    return true
+  }
+  if (
+    display.hideUntested &&
+    delayState === 'untested' &&
+    (health === undefined || health === 'unverified')
+  ) {
+    return true
+  }
+  if (
+    display.hideSlowMs &&
+    display.hideSlowMs > 0 &&
+    delayState === 'measured' &&
+    delay > display.hideSlowMs
+  ) {
+    return true
+  }
+  return false
+}
+
 function filterProxies(
   proxies: ResolvedMemberOccurrence[],
   groupName: string,
   filterText: string,
   searchState?: ProxySearchState,
+  options?: FilterSortOptions,
+  latencyTimeout?: number,
 ) {
   const query = filterText.trim()
-  if (!query) return proxies
+  if (!query) {
+    const display = options?.display
+    if (!display || display.bypass || !displayFiltersActive(display)) {
+      return proxies
+    }
+    return proxies.filter(
+      ({ member }) =>
+        !isHiddenByDisplay(
+          member,
+          groupName,
+          display,
+          options?.healthState,
+          latencyTimeout,
+        ),
+    )
+  }
 
+  // Search always reaches hidden nodes.
   const res1 = regex1.exec(query)
   if (res1) {
     const symbol = res1[1]
@@ -87,6 +196,7 @@ function sortProxies(
   groupName: string,
   sortType: ProxySortType,
   latencyTimeout?: number,
+  healthState?: (member: ResolvedProxyMember) => NodeHealthState | undefined,
 ) {
   if (!proxies) return []
   if (sortType === 0) return proxies
@@ -101,8 +211,13 @@ function sortProxies(
       .map((proxy) => ({
         proxy,
         delay: delayManager.getDelayFix(proxy.member, groupName),
+        health: nodeHealthSortRank(healthState?.(proxy.member)),
       }))
-      .sort((a, b) => compareByDelay(a.delay, b.delay, effectiveTimeout))
+      .sort(
+        (a, b) =>
+          a.health - b.health ||
+          compareByDelay(a.delay, b.delay, effectiveTimeout),
+      )
       .map(({ proxy }) => proxy)
   }
   const list = proxies.slice()

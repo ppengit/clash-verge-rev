@@ -9,7 +9,7 @@ import {
 import { open as openDialog } from '@tauri-apps/plugin-dialog'
 import { useLockFn } from 'ahooks'
 import type { ReactNode, Ref } from 'react'
-import { useCallback, useImperativeHandle, useState } from 'react'
+import { useCallback, useImperativeHandle, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { BaseDialog, DialogRef } from '@/components/base'
@@ -17,15 +17,20 @@ import { useVerge } from '@/hooks/use-verge'
 import {
   createLocalBackup,
   createWebdavBackup,
+  getSyncStatus,
   importLocalBackup,
+  syncNow,
 } from '@/services/cmds'
 import { mutate } from '@/services/mutate'
 import { errorDetail, showNotice } from '@/services/notice-service'
+import { revalidateQuery, useQuery } from '@/services/query-client'
 import { buildWebdavSignature, setWebdavStatus } from '@/services/webdav-status'
 
 import { AutoBackupSettings } from './auto-backup-settings'
 import { BackupHistoryViewer } from './backup-history-viewer'
 import { BackupWebdavDialog } from './backup-webdav-dialog'
+import { formatSyncTime } from './sync-helpers'
+import { SyncViewer } from './sync-viewer'
 
 type BackupSource = 'local' | 'webdav'
 
@@ -39,7 +44,68 @@ export function BackupViewer({ ref }: { ref?: Ref<DialogRef> }) {
   const [historySource, setHistorySource] = useState<BackupSource>('local')
   const [historyPage, setHistoryPage] = useState(0)
   const [webdavDialogOpen, setWebdavDialogOpen] = useState(false)
+  const [syncBusy, setSyncBusy] = useState(false)
+  const syncRef = useRef<DialogRef>(null)
   const webdavSignature = buildWebdavSignature(verge)
+
+  const { data: syncStatus, refetch: refetchSyncStatus } = useQuery({
+    queryKey: ['getSyncStatus'],
+    queryFn: getSyncStatus,
+    enabled: open,
+    retry: false,
+    staleTime: 5000,
+  })
+
+  const syncSummary = (() => {
+    const enabled =
+      syncStatus?.enabled ?? verge?.sync_settings?.enabled ?? false
+    if (!enabled) return t('settings.sections.sync.summaries.disabled')
+    return t('settings.sections.sync.summaries.enabled', {
+      time:
+        formatSyncTime(syncStatus?.lastSyncedAt) ??
+        t('settings.sections.sync.summaries.never'),
+    })
+  })()
+
+  const handleSyncNow = useLockFn(async () => {
+    setSyncBusy(true)
+    try {
+      const result = await mutate(() => syncNow(), {
+        id: 'backup-sync-now',
+        errorNotice: false,
+      })
+      if (!result.ok) return
+      const value = result.value
+      const messageKeys = {
+        upload: 'settings.modals.sync.messages.syncUploaded',
+        download: 'settings.modals.sync.messages.syncDownloaded',
+        merge: 'settings.modals.sync.messages.syncMerged',
+        restore: 'settings.modals.sync.messages.syncRestored',
+      } as const
+      const key =
+        messageKeys[value.action as keyof typeof messageKeys] ??
+        'settings.modals.sync.messages.syncUpToDate'
+      showNotice.success(key, { revision: value.revision })
+      if (value.conflicts) {
+        showNotice.warning('settings.modals.sync.messages.conflictsDetected')
+      }
+      if (value.applied) {
+        await Promise.allSettled([
+          refetchSyncStatus(),
+          revalidateQuery(['getProfiles']),
+          revalidateQuery(['getVergeConfig']),
+        ])
+      } else {
+        await refetchSyncStatus()
+      }
+    } catch (error) {
+      showNotice.error('settings.modals.sync.messages.syncFailed', {
+        error: errorDetail(error),
+      })
+    } finally {
+      setSyncBusy(false)
+    }
+  })
 
   useImperativeHandle(ref, () => ({
     open: () => setOpen(true),
@@ -130,6 +196,52 @@ export function BackupViewer({ ref }: { ref?: Ref<DialogRef> }) {
       onClose={() => setOpen(false)}
     >
       <Stack spacing={2}>
+        <Stack
+          spacing={1}
+          sx={{
+            border: (theme) => `1px solid ${theme.palette.divider}`,
+            borderRadius: 2,
+            p: 2,
+          }}
+        >
+          <Typography variant="subtitle1">
+            {t('settings.sections.sync.title')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {syncSummary}
+          </Typography>
+          {syncStatus?.lastError && (
+            <Typography variant="caption" color="error.main">
+              {t('settings.sections.sync.summaries.lastError', {
+                error: syncStatus.lastError,
+              })}
+            </Typography>
+          )}
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            sx={{ flexWrap: 'wrap' }}
+          >
+            <Button
+              variant="contained"
+              size="small"
+              loading={syncBusy}
+              disabled={syncStatus?.running === true}
+              onClick={() => void handleSyncNow()}
+            >
+              {t('settings.modals.sync.actions.syncNow')}
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => syncRef.current?.open()}
+            >
+              {t('settings.sections.sync.fields.settings')}
+            </Button>
+          </Stack>
+        </Stack>
+
         <Stack
           spacing={1}
           sx={{
@@ -271,6 +383,7 @@ export function BackupViewer({ ref }: { ref?: Ref<DialogRef> }) {
         onBackupSuccess={() => openHistory('webdav')}
         setBusy={setWebdavBusy}
       />
+      <SyncViewer ref={syncRef} />
     </BaseDialog>
   )
 }

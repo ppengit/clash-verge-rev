@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "Proxy Count",
       "delayCheckReset": "Беркетелгәнне гамәлдән чыгару өчен задержканы тикшерү",
-      "nodeCount": "{{count}} төен"
+      "nodeCount": "{{count}} төен",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "Урын",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "Задержканы тикшерү URL-ы",
       "showBasic": "Прокси турында кыскача мәгълүмат",
       "showDetail": "Прокси турында тулы мәгълүмат",
-      "filter": "Фильтр"
+      "filter": "Фильтр",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "Задержканы тикшерү URL-ы"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "Кулланырлык прокси төркемнәре юк",
       "noProxies": "Проксилар юк",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "Язылу импортланмаган",
         "description": "Прокси битендә күрсәтерлек мәгълүмат юк. Язылуны импортлау һәм активлаштыру өчен «Профильләр» битенә күчегез."
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "Профильләргә күчү",
         "restartCore": "Ядроны яңадан эшләтү",
-        "openLogs": "Журналлар папкасын ачу"
+        "openLogs": "Журналлар папкасын ачу",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Test URL must start with http:// or https://"
+      "invalidTestUrl": "Test URL must start with http:// or https://",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

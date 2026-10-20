@@ -89,7 +89,7 @@ test('latency URL validation rejects malformed hosts and ports and trims valid U
   ]) {
     delayManager.setUrl('url-validation', url)
     expect(delayManager.getUrl('url-validation')).toBe(
-      'http://cp.cloudflare.com/generate_204',
+      'https://cp.cloudflare.com/generate_204',
     )
   }
   delayManager.setUrl('url-validation', ' HTTP://localhost:8080/ ')

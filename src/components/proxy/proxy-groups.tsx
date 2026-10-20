@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   BaseEmpty,
@@ -23,9 +24,15 @@ import { useProfiles } from '@/hooks/use-profiles'
 import { useProxySelection } from '@/hooks/use-proxy-selection'
 import { useVerge } from '@/hooks/use-verge'
 import { useProxiesData, useSystemData } from '@/providers/app-data-context'
-import { syncTrayProxySelection } from '@/services/cmds'
+import { useNodeHealth } from '@/providers/node-health-context'
+import { syncTrayProxySelection, verifyNode } from '@/services/cmds'
 import delayManager from '@/services/delay'
 import { mutate } from '@/services/mutate'
+import {
+  isBadNodeState,
+  NODE_HEALTH_STATE_LABEL_KEYS,
+} from '@/services/node-health'
+import { showNotice } from '@/services/notice-service'
 import {
   isInteractableMember,
   resolveMember,
@@ -391,9 +398,74 @@ function NormalProxyGroups(props: { mode: string }) {
   } = useProxyRenderState(mode, false, null)
   const emptyList = useEmptyRenderList()
   const { onDragEnd: onHeaderDragEnd } = useProxyGroupHeaderLayout()
+  const { t } = useTranslation()
+  const { proxyView } = useProxiesData()
+  const { profiles } = useProfiles()
+  const profileUid = profiles?.current ?? null
+  const { stateOf } = useNodeHealth()
   const renderFirstRef = useRef(true)
   // Do not persist intermediate positions produced while restoring virtual scroll.
   const isRestoringRef = useRef(false)
+
+  const healthyAlternatives = useCallback(
+    (groupName: string, nodeName: string) => {
+      if (!proxyView) return []
+      const group =
+        proxyView.groups.find(({ name }) => name === groupName) ??
+        (proxyView.global?.name === groupName ? proxyView.global : undefined)
+      if (!group) return []
+      return group.members
+        .map((member) => resolveMember(proxyView, member))
+        .filter(
+          (member) =>
+            member.kind === 'node' &&
+            member.ref.name !== nodeName &&
+            stateOf(groupName, member.ref.name) === 'healthy',
+        )
+        .map((member) => member.ref.name)
+        .slice(0, 3)
+    },
+    [proxyView, stateOf],
+  )
+
+  // Advisory only: the switch has already happened, so verification never blocks it.
+  const verifySelection = useCallback(
+    async (groupName: string, nodeName: string) => {
+      try {
+        const result = await mutate(
+          () => verifyNode(profileUid, groupName, nodeName),
+          {
+            id: `verify-node:${groupName}:${nodeName}`,
+            errorNotice: false,
+            revalidate: [['getNodeHealth']],
+          },
+        )
+        if (!result.ok || result.value.discarded) return
+        const verification = result.value
+        const contentFailed =
+          verification.l3 !== null &&
+          verification.l3 !== undefined &&
+          !verification.l3.ok
+        if (!isBadNodeState(verification.state) && !contentFailed) return
+
+        const alternatives = healthyAlternatives(groupName, nodeName)
+        showNotice.warning(
+          alternatives.length > 0
+            ? 'proxies.feedback.warnings.unhealthyNodeWithAlternatives'
+            : 'proxies.feedback.warnings.unhealthyNode',
+          {
+            node: nodeName,
+            state: t(NODE_HEALTH_STATE_LABEL_KEYS[verification.state]),
+            alternatives: alternatives.join(', '),
+          },
+          8000,
+        )
+      } catch {
+        // The shared mutation funnel already suppressed the toast for this advisory check.
+      }
+    },
+    [healthyAlternatives, profileUid, t],
+  )
 
   useLayoutEffect(() => {
     if (renderList.length === 0) return
@@ -471,8 +543,10 @@ function NormalProxyGroups(props: { mode: string }) {
   }, [handleScroll])
 
   const { handleProxyGroupChange } = useProxySelection({
-    onSuccess: () => {
+    onSuccess: ({ groupName, proxyName }) => {
       onProxies()
+      if (verge?.node_health_settings?.verify_on_select === false) return
+      void verifySelection(groupName, proxyName)
     },
     onError: (error) => {
       console.error('代理切换失败', error)

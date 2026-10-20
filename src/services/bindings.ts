@@ -193,7 +193,19 @@ export const commands = {
       proxies?: string | null
       groups?: string | null
     } | null,
-  ) => __TAURI_INVOKE<null>('update_profile', { index, option }),
+  ) => __TAURI_INVOKE<ProfileUpdateReport>('update_profile', { index, option }),
+  resolveProfileUpdateConflicts: (
+    index: string,
+    resolutions: RuleConflictResolution[],
+  ) =>
+    __TAURI_INVOKE<ProfileUpdateReport>('resolve_profile_update_conflicts', {
+      index,
+      resolutions,
+    }),
+  cancelProfileUpdateConflicts: (index: string) =>
+    __TAURI_INVOKE<ProfileUpdateReport>('cancel_profile_update_conflicts', {
+      index,
+    }),
   deleteProfile: (index: string) =>
     __TAURI_INVOKE<null>('delete_profile', { index }),
   readProfileFile: (index: string) =>
@@ -201,6 +213,20 @@ export const commands = {
   /**  保存profiles的配置 */
   saveProfileFile: (index: string, fileData: string | null) =>
     __TAURI_INVOKE<ValidationOutcome>('save_profile_file', { index, fileData }),
+  listCustomRules: (profileUid: string | null) =>
+    __TAURI_INVOKE<CustomRule[]>('list_custom_rules', { profileUid }),
+  getRuleTargets: (profileUid: string) =>
+    __TAURI_INVOKE<RuleTargets>('get_rule_targets', { profileUid }),
+  ensureProfileSyncId: (uid: string) =>
+    __TAURI_INVOKE<string>('ensure_profile_sync_id', { uid }),
+  addCustomRule: (payload: CustomRuleInput) =>
+    __TAURI_INVOKE<CustomRule>('add_custom_rule', { payload }),
+  deleteCustomRule: (id: string) =>
+    __TAURI_INVOKE<null>('delete_custom_rule', { id }),
+  updateCustomRulePolicy: (id: string, policy: string) =>
+    __TAURI_INVOKE<CustomRule>('update_custom_rule_policy', { id, policy }),
+  validateCustomRules: (profileUid: string) =>
+    __TAURI_INVOKE<RuleIssue[]>('validate_custom_rules', { profileUid }),
   getNextUpdateTime: (uid: string) =>
     __TAURI_INVOKE<number | null>('get_next_update_time', { uid }),
   createLocalBackup: () => __TAURI_INVOKE<null>('create_local_backup'),
@@ -221,11 +247,30 @@ export const commands = {
     __TAURI_INVOKE<null>('delete_webdav_backup', { filename }),
   restoreWebdavBackup: (filename: string) =>
     __TAURI_INVOKE<null>('restore_webdav_backup', { filename }),
+  getSyncStatus: () => __TAURI_INVOKE<SyncStatus>('get_sync_status'),
+  syncNow: () => __TAURI_INVOKE<SyncRunResult>('sync_now'),
+  testWebdavSync: () => __TAURI_INVOKE<null>('test_webdav_sync'),
+  listSyncHistory: () =>
+    __TAURI_INVOKE<SyncHistoryEntry[]>('list_sync_history'),
+  restoreSyncHistory: (filename: string) =>
+    __TAURI_INVOKE<SyncRunResult>('restore_sync_history', { filename }),
   getUnlockItems: () => __TAURI_INVOKE<UnlockItem[]>('get_unlock_items'),
   checkMediaUnlock: (onComplete: Channel<UnlockItem>) =>
     __TAURI_INVOKE<UnlockItem[]>('check_media_unlock', { onComplete }),
   checkMediaUnlockItem: (name: string) =>
     __TAURI_INVOKE<UnlockItem>('check_media_unlock_item', { name }),
+  /**  Current health snapshot; the frontend rereads it after `verge://node-health-updated`. */
+  getNodeHealth: () => __TAURI_INVOKE<NodeHealthSnapshot>('get_node_health'),
+  /**  Trigger a manual cycle without waiting for it to finish. */
+  runNodeHealthCheck: (scope: string | null) =>
+    __TAURI_INVOKE<NodeHealthSnapshot>('run_node_health_check', { scope }),
+  /**  Run L1 plus a selected-node content probe for one node. */
+  verifyNode: (profileUid: string | null, group: string, node: string) =>
+    __TAURI_INVOKE<NodeVerificationResult>('verify_node', {
+      profileUid,
+      group,
+      node,
+    }),
 }
 
 /* Types */
@@ -270,6 +315,18 @@ export type CommandFailure_Serialize = {
   operation?: FailedOperation | null
 }
 
+export type ContentProbeResult = {
+  url: string
+  ok: boolean
+  status?: number | null
+  /**  Time until response headers arrived. */
+  ttfbMs: number
+  totalMs: number
+  bodyBytes: number
+  keywordMatched?: boolean | null
+  error?: string | null
+}
+
 /**  Why the Core is not running, kept until a Core starts again. */
 export type CoreFailure =
   | { kind: 'startFailed'; detail: string }
@@ -311,6 +368,18 @@ export type FailedOperation =
   | 'systemProxyDisable'
   | 'systemProxyRestore'
   | 'systemProxyGuard'
+
+export type HealthKey = {
+  profile: string
+  group: string
+  node: string
+}
+
+export type HealthSample = {
+  at: number
+  ok: boolean
+  delayMs?: number | null
+}
 
 /**  Define the `profiles.yaml` schema */
 export type IProfiles = IProfiles_Serialize | IProfiles_Deserialize
@@ -438,6 +507,16 @@ export type IVerge_Deserialize = {
   verge_tproxy_port?: number | null
   verge_tproxy_enabled?: boolean | null
   enable_tray_speed?: boolean | null
+  /**  Subscription update defaults. */
+  subscription_settings?: SubscriptionSettings | null
+  /**  Scheduled node health verification and selected-node checks. */
+  node_health_settings?: NodeHealthSettings | null
+  /**  Global node visibility defaults. */
+  node_display_settings?: NodeDisplaySettings | null
+  /**  Subscription traffic and expiry presentation. */
+  subscription_info_settings?: SubscriptionInfoSettings | null
+  /**  Scheduled WebDAV sync of user-owned configuration. */
+  sync_settings?: SyncSettings | null
 }
 
 /**  ### `verge.yaml` schema */
@@ -528,6 +607,16 @@ export type IVerge_Serialize = {
   verge_tproxy_port?: number | null
   verge_tproxy_enabled?: boolean | null
   enable_tray_speed?: boolean | null
+  /**  Subscription update defaults. */
+  subscription_settings: SubscriptionSettings | null
+  /**  Scheduled node health verification and selected-node checks. */
+  node_health_settings: NodeHealthSettings | null
+  /**  Global node visibility defaults. */
+  node_display_settings: NodeDisplaySettings | null
+  /**  Subscription traffic and expiry presentation. */
+  subscription_info_settings: SubscriptionInfoSettings | null
+  /**  Scheduled WebDAV sync of user-owned configuration. */
+  sync_settings: SyncSettings | null
 }
 
 export type IconInfo = {
@@ -576,7 +665,85 @@ export type LocalBackupFile = {
 export type NetworkInterfaceView = {
   name: string
   addr: InterfaceAddress[]
-  mac_addr: string | null
+  mac_addr: string
+}
+
+export type NodeDisplaySettings = {
+  hide_timeout?: boolean | null
+  hide_untested?: boolean | null
+  hide_unhealthy?: boolean | null
+  /**  Hides nodes slower than this threshold; zero disables the filter. */
+  hide_slow_ms?: number | null
+  default_sort?: number | null
+}
+
+export type NodeHealthEntry = {
+  key: HealthKey
+  state: NodeHealthState
+  delayMs?: number | null
+  l1: TargetResult[]
+  l2: TargetResult[]
+  l3?: ContentProbeResult | null
+  failedTargets: string[]
+  checkedAt: number
+  l2CheckedAt: number
+  consecutiveFailures: number
+  samples: HealthSample[]
+}
+
+export type NodeHealthEventPayload = {
+  generation: number
+}
+
+export type NodeHealthSettings = {
+  enabled?: boolean | null
+  /**  L1 (link/latency) interval in minutes. */
+  interval_minutes?: number | null
+  /**  L2 (real-site status) interval in minutes. */
+  deep_interval_minutes?: number | null
+  /**  `current_node`, `current_group`, or `all_groups`. */
+  scope?: string | null
+  l1_targets?: ProbeTarget[] | null
+  l2_targets?: ProbeTarget[] | null
+  verify_on_select?: boolean | null
+  auto_failover?: boolean | null
+}
+
+export type NodeHealthSnapshot = {
+  schemaVersion: number
+  enabled: boolean
+  scope: string
+  intervalMinutes: number
+  deepIntervalMinutes: number
+  verifyOnSelect: boolean
+  autoFailover: boolean
+  profile?: string | null
+  generation: number
+  running: boolean
+  updatedAt: number
+  entries: NodeHealthEntry[]
+}
+
+export type NodeHealthState =
+  | 'healthy'
+  | 'degraded'
+  | 'unusable'
+  | 'site_blocked'
+  | 'unverified'
+  | 'testing'
+
+export type NodeVerificationResult = {
+  profile?: string | null
+  group: string
+  node: string
+  /**  Whether the node was the group's selected node when L3 started. */
+  selected: boolean
+  state: NodeHealthState
+  l1: TargetResult[]
+  l3?: ContentProbeResult | null
+  /**  The selection changed while L3 was in flight, so the result was not stored. */
+  discarded: boolean
+  checkedAt: number
 }
 
 export type NoticeStatus =
@@ -648,10 +815,51 @@ export type PrfExtra = {
   expire: number
 }
 
+export type ConflictAction = 'remap' | 'direct' | 'reject' | 'delete'
+
+export type CustomRule = {
+  id: string
+  profile: string
+  position: RulePosition
+  type: string
+  value: string
+  policy: string
+  policy_kind: string
+  no_resolve: boolean
+  enabled: boolean
+  created_at: number
+  updated_at: number
+  deleted: boolean
+}
+
+export type CustomRuleInput = {
+  profileUid: string
+  ruleType: string
+  value: string
+  policy: string
+  policyKind?: string | null
+  position: RulePosition
+  noResolve: boolean
+  applyToAll: boolean
+}
+
+export type ProfileUpdateReport =
+  | { status: 'updated' }
+  | { status: 'skipped' }
+  | {
+      status: 'conflict'
+      conflicts: RuleConflict[]
+      staged: boolean
+      targets: RuleTargets
+    }
+  | { status: 'cancelled' }
+
 export type PrfItem = PrfItem_Serialize | PrfItem_Deserialize
 
 export type PrfItem_Deserialize = {
   uid?: string | null
+  /**  Stable identity shared with backups and custom rules; independent of `uid`. */
+  sync_id?: string | null
   /**  enum value: remote | local | script | merge */
   type?: string | null
   name?: string | null
@@ -668,6 +876,8 @@ export type PrfItem_Deserialize = {
 
 export type PrfItem_Serialize = {
   uid: string | null
+  /**  Stable identity shared with backups and custom rules; independent of `uid`. */
+  sync_id?: string | null
   /**  enum value: remote | local | script | merge */
   type: string | null
   name: string | null
@@ -727,6 +937,47 @@ export type PrfOption_Serialize = {
 export type PrfSelected = {
   name?: string | null
   now?: string | null
+}
+
+export type ProbeTarget = {
+  url: string
+  /**  `204`, `200`, `200-299`, or a `/`-separated combination. */
+  expected: string
+  keyword?: string | null
+  timeout_ms?: number | null
+}
+
+export type RuleConflict = {
+  source: string
+  ruleId?: string | null
+  rule: string
+  position?: string | null
+  code: string
+  missing: string
+}
+
+export type RuleConflictResolution = {
+  ruleId?: string | null
+  rule: string
+  action: ConflictAction
+  policy?: string | null
+}
+
+export type RuleIssue = {
+  ruleId?: string | null
+  code: string
+  message: string
+}
+
+export type RulePosition = 'prepend' | 'append'
+
+export type RuleTargets = {
+  groups: string[]
+  policies: string[]
+  ruleProviders: string[]
+  subRules: string[]
+  builtinPolicies: string[]
+  hasScript: boolean
 }
 
 export type ProfileCreate = ProfileCreate_Serialize | ProfileCreate_Deserialize
@@ -992,6 +1243,81 @@ export type SidecarFailureSnapshot = {
   detail: string | null
 }
 
+export type SubscriptionInfoSettings = {
+  show_traffic?: boolean | null
+  expiry_warning_days?: number | null
+}
+
+export type SubscriptionSettings = {
+  /**  Default auto-update interval in minutes for new subscriptions. */
+  default_update_interval?: number | null
+  update_on_startup?: boolean | null
+  update_only_current?: boolean | null
+  notify_on_failure?: boolean | null
+}
+
+export type SyncConflictCopy = {
+  name: string
+  createdAt: number
+  files: string[]
+}
+
+export type SyncHistoryEntry = {
+  filename: string
+  revision: number
+  deviceId: string
+  deviceName: string
+  createdAt: number
+  payloadSize: number
+}
+
+export type SyncRunResult = {
+  action: string
+  revision: number
+  uploaded: boolean
+  applied: boolean
+  conflicts: boolean
+  localHash: string
+}
+
+export type SyncSettings = {
+  enabled?: boolean | null
+  /**  `two_way`, `upload`, or `download`. */
+  mode?: string | null
+  /**  `subscriptions`, `overrides`, `custom_rules`, `settings`. */
+  scopes?: string[] | null
+  interval_minutes?: number | null
+  on_startup?: boolean | null
+  on_change?: boolean | null
+  /**  `last_modified`, `local`, `remote`, or `ask`. */
+  conflict_policy?: string | null
+  device_name?: string | null
+  encrypt?: boolean | null
+  /**  Local-only payload password; never included in the synced payload. */
+  password?: string | null
+  /**  Explicit opt-in for self-signed WebDAV certificates; verification stays on by default. */
+  danger_accept_invalid_certs?: boolean | null
+}
+
+export type SyncStatus = {
+  enabled: boolean
+  running: boolean
+  mode: string
+  scopes: string[]
+  intervalMinutes: number
+  deviceId: string
+  deviceName: string
+  lastRevision: number
+  lastSyncedAt?: string | null
+  lastError?: string | null
+  needsFirstSync: boolean
+  remoteAvailable?: boolean | null
+  remoteRevision?: number | null
+  remoteError?: string | null
+  conflicts: SyncConflictCopy[]
+  settings?: SyncSettings | null
+}
+
 export type SystemInfo = {
   system_name: string
   system_version: string
@@ -1001,6 +1327,14 @@ export type SystemProxy = {
   enable: boolean
   server: string
   bypass: string
+}
+
+export type TargetResult = {
+  url: string
+  ok: boolean
+  delayMs?: number | null
+  error?: string | null
+  checkedAt: number
 }
 
 export type ToggleableProxyPort = {
@@ -1046,6 +1380,7 @@ export type VergeEventPayloads = {
   'profile-update-completed': ProfileUpdatePayload
   'verge://run-state-changed': RunStateView
   'verge://pending-failures-changed': null
+  'verge://node-health-updated': NodeHealthEventPayload
 }
 
 export type WebDavFile = {

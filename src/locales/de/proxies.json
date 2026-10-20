@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "Anzahl der Knoten",
       "delayCheckReset": "Latenztest durchführen, um Fixierung aufzuheben",
-      "nodeCount": "{{count}} Knoten"
+      "nodeCount": "{{count}} Knoten",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "Aktueller Knoten",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "Latenztest-URL",
       "showBasic": "Knotendetails ausblenden",
       "showDetail": "Knotendetails anzeigen",
-      "filter": "Knoten filtern"
+      "filter": "Knoten filtern",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "Latenztest-URL"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "Keine Proxy-Gruppen verfügbar",
       "noProxies": "Keine Proxys",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "Kein Abonnement importiert",
         "description": "Auf der Proxy-Seite gibt es nichts anzuzeigen. Öffnen Sie „Abonnement“, um ein Abonnement zu importieren und zu aktivieren."
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "Zum Abonnement",
         "restartCore": "Kern neu starten",
-        "openLogs": "Protokollordner öffnen"
+        "openLogs": "Protokollordner öffnen",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Die Test-URL muss mit http:// oder https:// beginnen"
+      "invalidTestUrl": "Die Test-URL muss mit http:// oder https:// beginnen",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

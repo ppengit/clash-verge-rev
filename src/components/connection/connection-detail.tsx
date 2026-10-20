@@ -12,7 +12,12 @@ export interface ConnectionDetailRef {
   close: () => void
 }
 
-export function ConnectionDetail({ ref }: { ref?: Ref<ConnectionDetailRef> }) {
+interface Props {
+  ref?: Ref<ConnectionDetailRef>
+  onAddRule?: (detail: IConnectionsItem) => void
+}
+
+export function ConnectionDetail({ ref, onAddRule }: Props) {
   const [open, setOpen] = useState(false)
   const [detail, setDetail] = useState<IConnectionsItem | null>(null)
   const [closed, setClosed] = useState(false)
@@ -54,6 +59,7 @@ export function ConnectionDetail({ ref }: { ref?: Ref<ConnectionDetailRef> }) {
             data={detail}
             closed={closed}
             onClose={onClose}
+            onAddRule={onAddRule}
           />
         ) : null
       }
@@ -65,9 +71,15 @@ interface InnerProps {
   data: IConnectionsItem
   closed: boolean
   onClose?: () => void
+  onAddRule?: (detail: IConnectionsItem) => void
 }
 
-const InnerConnectionDetail = ({ data, closed, onClose }: InnerProps) => {
+const InnerConnectionDetail = ({
+  data,
+  closed,
+  onClose,
+  onAddRule,
+}: InnerProps) => {
   const { t } = useTranslation()
   const { metadata, rulePayload } = data
   const theme = useTheme()
@@ -147,8 +159,24 @@ const InnerConnectionDetail = ({ data, closed, onClose }: InnerProps) => {
         </div>
       ))}
 
-      {!closed && (
-        <Box sx={{ textAlign: 'right' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: 1,
+          mt: 1,
+        }}
+      >
+        {onAddRule && (
+          <Button
+            variant="outlined"
+            title={t('connections.components.actions.addRule')}
+            onClick={() => onAddRule(data)}
+          >
+            {t('connections.components.actions.addRule')}
+          </Button>
+        )}
+        {!closed && (
           <Button
             variant="contained"
             title={t('connections.components.actions.closeConnection')}
@@ -159,8 +187,8 @@ const InnerConnectionDetail = ({ data, closed, onClose }: InnerProps) => {
           >
             {t('connections.components.actions.closeConnection')}
           </Button>
-        </Box>
-      )}
+        )}
+      </Box>
     </Box>
   )
 }

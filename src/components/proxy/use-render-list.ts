@@ -4,6 +4,8 @@ import { useRuntimeConfig } from '@/hooks/use-clash'
 import { useGroupsDelays } from '@/hooks/use-group-delays'
 import { useVerge } from '@/hooks/use-verge'
 import { useAppRefreshers, useProxiesData } from '@/providers/app-data-context'
+import { useNodeHealth } from '@/providers/node-health-context'
+import type { NodeDisplaySettings } from '@/services/bindings'
 import delayManager, { type DelaySnapshot } from '@/services/delay'
 import {
   isInteractableMember,
@@ -16,7 +18,7 @@ import {
 } from '@/types/proxy-view'
 import { debugLog } from '@/utils/debug'
 
-import { filterSort } from './use-filter-sort'
+import { filterSort, type ProxySortType } from './use-filter-sort'
 import {
   DEFAULT_STATE,
   useHeadStateNew,
@@ -41,6 +43,8 @@ export interface IRenderItem {
   headState?: HeadState
   icon?: string
   testUrl?: string
+  /** Members removed by the display filter, for the group header and empty state. */
+  hiddenCount?: number
 }
 
 /**
@@ -64,6 +68,10 @@ type GroupCache = {
   headState: HeadState
   col: number
   latencyTimeout: number | undefined
+  sortType: ProxySortType
+  display: NodeDisplaySettings | null | undefined
+  globalHideUnavailable: boolean
+  health: ReadonlyMap<string, unknown> | undefined
   /// This group's own delays. Compared by identity so that a test settling in one group
   /// does not throw away every other group's sorted order.
   delays: DelaySnapshot | undefined
@@ -128,9 +136,15 @@ export const useRenderList = (
   const { proxyView } = useProxiesData()
   const { refreshProxy } = useAppRefreshers()
   const { verge } = useVerge()
+  const { entries: healthEntries, stateOf: healthStateOf } = useNodeHealth()
   const { width } = useWindowWidth()
   const [headStates, setHeadState] = useHeadStateNew()
   const latencyTimeout = verge?.default_latency_timeout
+  const nodeDisplay = verge?.node_display_settings
+  const globalHideUnavailable = Boolean(
+    nodeDisplay?.hide_timeout || nodeDisplay?.hide_unhealthy,
+  )
+  const defaultSort = (nodeDisplay?.default_sort ?? 0) as ProxySortType
   const { data: runtimeConfig } = useRuntimeConfig(!!isChainMode)
   const runtimeProxies = (
     runtimeConfig as RuntimeConfigWithProxySequence | null
@@ -269,6 +283,18 @@ export const useRenderList = (
 
     const retList = renderGroups.flatMap((group) => {
       const headState = headStates[group.name] || DEFAULT_STATE
+      const sortType = headState.sortType ?? defaultSort
+      const override = headState.bypassHide ? false : headState.hideUnavailable
+      const hideTimeout = override ?? nodeDisplay?.hide_timeout ?? false
+      const hideUnhealthy = override ?? nodeDisplay?.hide_unhealthy ?? false
+      const display = {
+        hideTimeout,
+        hideUnhealthy,
+        hideUntested: nodeDisplay?.hide_untested ?? false,
+        hideSlowMs: nodeDisplay?.hide_slow_ms ?? 0,
+        pinnedNode: group.now,
+        bypass: headState.bypassHide ?? false,
+      }
       const cached = cache.get(group.name)
       if (
         cached &&
@@ -277,12 +303,17 @@ export const useRenderList = (
         cached.headState === headState &&
         cached.col === col &&
         cached.latencyTimeout === latencyTimeout &&
+        cached.sortType === sortType &&
+        cached.display === nodeDisplay &&
+        cached.globalHideUnavailable === globalHideUnavailable &&
+        cached.health === healthEntries &&
         cached.delays === groupDelays.get(group.name)
       ) {
         return cached.items
       }
 
       anyChanged = true
+      let hiddenCount = 0
       const ret: IRenderItem[] = [
         {
           type: 0,
@@ -295,23 +326,38 @@ export const useRenderList = (
       ]
 
       if (headState.open || !useRule) {
+        const allOccurrences = resolveOccurrences(proxyView, group)
         const occurrences = filterSort(
-          resolveOccurrences(proxyView, group),
+          allOccurrences,
           group.name,
           headState.filterText,
-          headState.sortType,
+          sortType,
           latencyTimeout!,
           {
             matchCase: headState.filterMatchCase,
             matchWholeWord: headState.filterMatchWholeWord,
             useRegularExpression: headState.filterUseRegularExpression,
           },
+          {
+            healthState: (member) => healthStateOf(group.name, member.ref.name),
+            display,
+          },
         )
+        if (!headState.filterText.trim()) {
+          hiddenCount = allOccurrences.length - occurrences.length
+        }
+        ret[0].hiddenCount = hiddenCount
         if (!useRule) {
           ret.push({ type: 1, key: `head-${group.name}`, group, headState })
         }
         if (occurrences.length === 0) {
-          ret.push({ type: 3, key: `empty-${group.name}`, group, headState })
+          ret.push({
+            type: 3,
+            key: `empty-${group.name}`,
+            group,
+            headState,
+            hiddenCount,
+          })
         } else if (col > 1) {
           ret.push(
             ...groupOccurrences(occurrences, col).map((memberCol) => ({
@@ -342,6 +388,10 @@ export const useRenderList = (
         headState,
         col,
         latencyTimeout: latencyTimeout!,
+        sortType,
+        display: nodeDisplay,
+        globalHideUnavailable,
+        health: healthEntries,
         delays: groupDelays.get(group.name),
         items: ret,
       })
@@ -359,11 +409,16 @@ export const useRenderList = (
   }, [
     chainOccurrences,
     col,
+    defaultSort,
+    globalHideUnavailable,
     groupDelays,
     headStates,
+    healthEntries,
+    healthStateOf,
     isChainMode,
     latencyTimeout,
     mode,
+    nodeDisplay,
     proxyView,
     selectedGroup,
   ])

@@ -24,10 +24,12 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
+import { useVerge } from '@/hooks/use-verge'
 import { useAppRefreshers } from '@/providers/app-data-context'
 import { updateProfile } from '@/services/cmds'
 import { mutate } from '@/services/mutate'
 import { showNotice } from '@/services/notice-service'
+import { handleProfileUpdateReport } from '@/services/profile-update-conflict'
 import { isValidUrl } from '@/utils/network'
 import { openExternalUrl } from '@/utils/open-external-url'
 import parseTraffic from '@/utils/parse-traffic'
@@ -75,6 +77,17 @@ const ProfileDetails = ({
 }) => {
   const { t } = useTranslation()
   const theme = useTheme()
+  const { verge } = useVerge()
+  const showTraffic = verge?.subscription_info_settings?.show_traffic ?? true
+  const expiryWarningDays =
+    verge?.subscription_info_settings?.expiry_warning_days ?? 3
+  const expireAt = current.extra?.expire
+    ? dayjs(current.extra.expire * 1000)
+    : null
+  const now = dayjs()
+  const expireSoon = Boolean(
+    expireAt?.isAfter(now) && expireAt.diff(now, 'day') <= expiryWarningDays,
+  )
 
   const usedTraffic = useMemo(() => {
     if (!current.extra) return 0
@@ -182,7 +195,7 @@ const ProfileDetails = ({
           </Stack>
         )}
 
-        {current.extra && (
+        {showTraffic && current.extra && (
           <>
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
               <SpeedOutlined fontSize="small" color="action" />
@@ -200,7 +213,13 @@ const ProfileDetails = ({
                 <EventOutlined fontSize="small" color="action" />
                 <Typography variant="body2" color="text.secondary">
                   {t('shared.labels.expireTime')}:{' '}
-                  <Box component="span" sx={{ fontWeight: 'medium' }}>
+                  <Box
+                    component="span"
+                    sx={{
+                      fontWeight: 'medium',
+                      color: expireSoon ? 'warning.main' : undefined,
+                    }}
+                  >
                     {parseExpire(current.extra.expire)}
                   </Box>
                 </Typography>
@@ -279,13 +298,16 @@ export const HomeProfileCard = ({
 
     setUpdating(true)
     try {
-      await mutate(
+      const result = await mutate(
         () => updateProfile(current.uid!, current.option ?? undefined),
         {
           id: `update-profile:${current.uid}`,
           errorNotice: false,
         },
       )
+      if (result.ok) {
+        handleProfileUpdateReport(current.uid!, result.value)
+      }
       onProfileUpdated?.()
 
       // 刷新首页数据

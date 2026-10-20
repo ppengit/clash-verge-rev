@@ -14,6 +14,7 @@ import {
   IndeterminateCheckBoxRounded,
   LocalFireDepartmentRounded,
   RefreshRounded,
+  SettingsRounded,
   TextSnippetOutlined,
 } from '@mui/icons-material'
 import { Box, Button, Divider, Grid, IconButton, Stack } from '@mui/material'
@@ -39,6 +40,7 @@ import {
   type ProfileViewerRef,
 } from '@/components/profile/profile-viewer'
 import { ConfigViewer } from '@/components/setting/mods/config-viewer'
+import { SubscriptionSettingsViewer } from '@/components/setting/mods/subscription-settings-viewer'
 import { fetchProfilesIntoCache, useProfiles } from '@/hooks/use-profiles'
 import {
   createProfile,
@@ -51,6 +53,7 @@ import {
 } from '@/services/cmds'
 import { mutate } from '@/services/mutate'
 import { errorDetail, showNotice } from '@/services/notice-service'
+import { handleProfileUpdateReport } from '@/services/profile-update-conflict'
 import { revalidateQuery, useQuery } from '@/services/query-client'
 import { useThemeMode } from '@/services/states'
 import {
@@ -191,6 +194,7 @@ const ProfilePage = () => {
 
   const viewerRef = useRef<ProfileViewerRef>(null)
   const configRef = useRef<DialogRef>(null)
+  const subscriptionSettingsRef = useRef<DialogRef>(null)
 
   const profileItems = useMemo(() => {
     const items = profiles.items || []
@@ -550,10 +554,11 @@ const ProfilePage = () => {
       const updateOne = async (uid: string) => {
         try {
           // Per-uid id: the worker pool must not dedupe distinct subscriptions.
-          await mutate(() => updateProfile(uid), {
+          const result = await mutate(() => updateProfile(uid), {
             id: `update-profile:${uid}`,
             errorNotice: false,
           })
+          if (result.ok) handleProfileUpdateReport(uid, result.value)
           throttleMutate()
         } catch (err: any) {
           console.error(`更新订阅 ${uid} 失败:`, err)
@@ -717,6 +722,15 @@ const ProfilePage = () => {
                 onClick={onUpdateAll}
               >
                 <RefreshRounded />
+              </IconButton>
+
+              <IconButton
+                size="small"
+                color="inherit"
+                title={t('profiles.page.actions.subscriptionSettings')}
+                onClick={() => subscriptionSettingsRef.current?.open()}
+              >
+                <SettingsRounded />
               </IconButton>
 
               <IconButton
@@ -980,6 +994,7 @@ const ProfilePage = () => {
         }}
       />
       <ConfigViewer ref={configRef} />
+      <SubscriptionSettingsViewer ref={subscriptionSettingsRef} />
     </BasePage>
   )
 }

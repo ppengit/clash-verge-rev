@@ -24,7 +24,8 @@
     "actions": {
       "active": "Aktiv",
       "closed": "Geschlossen",
-      "closeConnection": "Verbindung schließen"
+      "closeConnection": "Verbindung schließen",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "Spalten",

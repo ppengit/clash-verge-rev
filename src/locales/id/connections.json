@@ -24,7 +24,8 @@
     "actions": {
       "active": "Active",
       "closed": "Closed",
-      "closeConnection": "Tutup Koneksi"
+      "closeConnection": "Tutup Koneksi",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "Kolom",

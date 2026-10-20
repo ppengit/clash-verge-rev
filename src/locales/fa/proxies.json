@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "Proxy Count",
       "delayCheckReset": "بررسی تأخیر برای لغو ثابت",
-      "nodeCount": "{{count}} نود"
+      "nodeCount": "{{count}} نود",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "موقعیت",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "آدرس بررسی تأخیر",
       "showBasic": "پراکسی پایه",
       "showDetail": "جزئیات پراکسی",
-      "filter": "فیلتر"
+      "filter": "فیلتر",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "آدرس بررسی تأخیر"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "هیچ گروه پروکسی در دسترس نیست",
       "noProxies": "پروکسی‌ای وجود ندارد",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "هیچ اشتراکی وارد نشده است",
         "description": "چیزی برای نمایش در صفحه پروکسی وجود ندارد. برای وارد کردن و فعال‌سازی اشتراک به صفحه «پروفایل‌ها» بروید."
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "رفتن به پروفایل‌ها",
         "restartCore": "راه‌اندازی مجدد هسته",
-        "openLogs": "باز کردن پوشه گزارش‌ها"
+        "openLogs": "باز کردن پوشه گزارش‌ها",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Test URL must start with http:// or https://"
+      "invalidTestUrl": "Test URL must start with http:// or https://",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

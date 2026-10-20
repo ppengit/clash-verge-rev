@@ -76,6 +76,7 @@ pub async fn import_profile(url: std::string::String, option: Option<PrfOption>)
             return Err(coded_error("PROFILE_IMPORT_FAILED", profile_import_error(&e)));
         }
     };
+    crate::config::profiles::apply_default_update_interval(item).await;
 
     if let Err(e) = profiles_append_item_safe(item).await {
         logging!(error, Type::Cmd, "[导入订阅] 保存配置失败: {e:#}");
@@ -92,6 +93,7 @@ pub async fn import_profile(url: std::string::String, option: Option<PrfOption>)
         tracing::Span::current().record("uid", tracing::field::display(uid));
         handle::Handle::notify_profile_changed(uid);
     }
+    crate::core::sync::SyncManager::notify_local_change();
 
     Ok(())
 }
@@ -104,6 +106,7 @@ pub async fn reorder_profile(active_id: std::string::String, over_id: std::strin
     match profiles_reorder_safe(&active_id, &over_id).await {
         Ok(_) => {
             logging!(info, Type::Cmd, "重新排序配置文件: {} -> {}", active_id, over_id);
+            crate::core::sync::SyncManager::notify_local_change();
             Ok(())
         }
         Err(err) => {
@@ -130,6 +133,7 @@ pub async fn create_profile(item: ProfileCreate, file_data: Option<std::string::
                 .await
                 .with_error_code("PROFILE_CREATE_FAILED")?;
             logging_error!(Type::Timer, Timer::global().refresh().await);
+            crate::core::sync::SyncManager::notify_local_change();
             Ok(())
         }
         Err(err) => Err(coded_error("PROFILE_CREATE_FAILED", err)),
@@ -138,15 +142,51 @@ pub async fn create_profile(item: ProfileCreate, file_data: Option<std::string::
 
 #[tauri::command]
 #[specta::specta]
-pub async fn update_profile(index: std::string::String, option: Option<PrfOption>) -> CmdResult {
+pub async fn update_profile(
+    index: std::string::String,
+    option: Option<PrfOption>,
+) -> CmdResult<feat::ProfileUpdateReport> {
     let index: String = index.into();
     match feat::update_profile(&index, option.as_ref(), true).await {
-        Ok(_) => Ok(()),
+        Ok(report) => {
+            crate::core::sync::SyncManager::notify_local_change();
+            Ok(report)
+        }
         Err(e) => {
             logging!(error, Type::Cmd, "update profile failed: {e:#}");
             Err(coded_error("PROFILE_UPDATE_FAILED", e))
         }
     }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn resolve_profile_update_conflicts(
+    index: std::string::String,
+    resolutions: Vec<feat::RuleConflictResolution>,
+) -> CmdResult<feat::ProfileUpdateReport> {
+    let index: String = index.into();
+    match feat::resolve_update_conflicts(&index, resolutions).await {
+        Ok(report) => {
+            if matches!(report, feat::ProfileUpdateReport::Updated) {
+                crate::core::sync::SyncManager::notify_local_change();
+            }
+            Ok(report)
+        }
+        Err(error) => {
+            logging!(error, Type::Cmd, "resolve profile update conflicts failed: {error:#}");
+            Err(coded_error("PROFILE_UPDATE_CONFLICT", error))
+        }
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn cancel_profile_update_conflicts(index: std::string::String) -> CmdResult<feat::ProfileUpdateReport> {
+    let index: String = index.into();
+    feat::cancel_staged_update(&index)
+        .await
+        .map_err(|error| coded_error("PROFILE_UPDATE_CONFLICT", error))
 }
 
 #[tauri::command]
@@ -209,6 +249,7 @@ pub async fn delete_profile(index: std::string::String) -> CmdResult {
         }
     }
     logging_error!(Type::Timer, Timer::global().refresh().await);
+    crate::core::sync::SyncManager::notify_local_change();
     Ok(())
 }
 
@@ -264,6 +305,7 @@ async fn handle_success(current_value: Option<&String>) -> CmdResult<ValidationO
         handle::Handle::notify_profile_changed(current);
     }
 
+    logging_error!(Type::Timer, Timer::global().refresh().await);
     logging_error!(Type::Config, Config::sync_dns_override().await);
     Ok(ValidationOutcome::Valid)
 }
@@ -477,6 +519,7 @@ pub async fn patch_profile(index: std::string::String, profile: ProfilePatch) ->
         });
     }
 
+    crate::core::sync::SyncManager::notify_local_change();
     Ok(())
 }
 

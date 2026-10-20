@@ -21,6 +21,8 @@ import {
   type ResolvedProxyMember,
 } from '@/types/proxy-view'
 
+import { HealthBadge } from './health-badge'
+
 interface Props {
   group: ProxyGroupView
   member: ResolvedProxyMember
@@ -111,6 +113,7 @@ export const ProxyItem = (props: Props) => {
               >
                 {name}
                 {showType && now && ` - ${now}`}
+                {!unresolved && <HealthBadge group={group.name} node={name} />}
               </Box>
               {showType && <TypeBox>{type}</TypeBox>}
               {!unresolved && showType && details?.udp && (

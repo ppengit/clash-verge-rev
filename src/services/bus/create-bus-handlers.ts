@@ -49,7 +49,7 @@ export const createEventBus = (deps: BusHandlerDeps) => {
     }
     lastProfileId = newProfileId
     lastProfileChangeTime = now
-    deps.revalidateKeys(['getProfiles'])
+    deps.revalidateKeys(['getProfiles', 'getNodeHealth'])
   }
 
   const handleRefreshProxyConfig = () => {
@@ -91,6 +91,7 @@ export const createEventBus = (deps: BusHandlerDeps) => {
       if (payload.mode !== 'NotRunning') forgetShownStartupError()
     },
     'verge://pending-failures-changed': () => deps.readPendingFailures(),
+    'verge://node-health-updated': () => deps.revalidateKeys(['getNodeHealth']),
     [TEST_ALL_EVENT]: () => deps.dispatch({ type: 'testAll/requested' }),
   }
 

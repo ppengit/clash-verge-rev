@@ -177,7 +177,7 @@ class DelayManager {
     debugLog(
       `[DelayManager] 获取测试URL，组: ${group}, URL: ${url || '未设置'}`,
     )
-    return url || 'http://cp.cloudflare.com/generate_204'
+    return url || 'https://cp.cloudflare.com/generate_204'
   }
 
   setListener(

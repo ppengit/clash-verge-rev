@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "節點數量",
       "delayCheckReset": "測試延遲以取消固定",
-      "nodeCount": "{{count}} 個節點"
+      "nodeCount": "{{count}} 個節點",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "目前節點",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "延遲測試網址",
       "showBasic": "隱藏節點細節",
       "showDetail": "展示節點細節",
-      "filter": "篩選節點"
+      "filter": "篩選節點",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "延遲測試網址"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "目前沒有可用的代理群組",
       "noProxies": "目前沒有代理",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "尚未匯入訂閱",
         "description": "代理頁沒有可顯示的內容。請先前往「訂閱」頁面匯入並啟用訂閱。"
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "前往訂閱",
         "restartCore": "重新啟動核心",
-        "openLogs": "開啟日誌目錄"
+        "openLogs": "開啟日誌目錄",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Test URL must start with http:// or https://"
+      "invalidTestUrl": "Test URL must start with http:// or https://",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

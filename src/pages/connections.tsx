@@ -37,10 +37,16 @@ import {
   useConnectionRowViews,
 } from '@/components/connection/connection-row-view'
 import { ConnectionTable } from '@/components/connection/connection-table'
+import {
+  QuickAddRuleDialog,
+  type QuickAddRulePrefill,
+} from '@/components/rule/quick-add-rule-dialog'
 import { useConnectionData } from '@/hooks/use-connection-data'
 import { useConnectionSetting } from '@/hooks/use-connection-setting'
+import { useProfiles } from '@/hooks/use-profiles'
 import { useTrafficData } from '@/hooks/use-traffic-data'
 import { useVisibility } from '@/hooks/use-visibility'
+import { useAppRefreshers } from '@/providers/app-data-context'
 import { mutate } from '@/services/mutate'
 import parseTraffic from '@/utils/parse-traffic'
 
@@ -80,6 +86,39 @@ const orderFunctionMap = ORDER_OPTIONS.reduce<Record<OrderKey, OrderFunc>>(
 )
 
 const EMPTY_CONNECTIONS: IConnectionsItem[] = []
+
+const suggestionForConnection = (
+  connection: IConnectionsItem,
+): QuickAddRulePrefill | null => {
+  const {
+    host,
+    destinationIP,
+    process,
+    processPath,
+    destinationPort,
+    network,
+  } = connection.metadata
+
+  if (host && host !== destinationIP) {
+    return { ruleType: 'DOMAIN-SUFFIX', value: host }
+  }
+  if (destinationIP) {
+    const isIpv6 = destinationIP.includes(':')
+    return {
+      ruleType: isIpv6 ? 'IP-CIDR6' : 'IP-CIDR',
+      value: `${destinationIP}/${isIpv6 ? 128 : 32}`,
+      noResolve: true,
+    }
+  }
+  if (process) return { ruleType: 'PROCESS-NAME', value: process }
+  if (processPath) return { ruleType: 'PROCESS-PATH', value: processPath }
+  if (destinationPort) {
+    return { ruleType: 'DST-PORT', value: String(destinationPort) }
+  }
+  if (network) return { ruleType: 'NETWORK', value: network }
+  return null
+}
+
 const ConnectionsPage = () => {
   const { t } = useTranslation()
   const pageVisible = useVisibility()
@@ -105,6 +144,12 @@ const ConnectionsPage = () => {
   const isTableLayout = setting.layout === 'table'
 
   const [isColumnManagerOpen, setIsColumnManagerOpen] = useState(false)
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
+  const [quickAddPrefill, setQuickAddPrefill] =
+    useState<QuickAddRulePrefill | null>(null)
+
+  const { current } = useProfiles()
+  const { refreshRules } = useAppRefreshers()
 
   const selectedConnections =
     connectionsType === 'active'
@@ -152,6 +197,14 @@ const ConnectionsPage = () => {
     },
     [connectionsType, filterConn],
   )
+
+  const addRuleForConnection = useCallback((connection: IConnectionsItem) => {
+    const prefill = suggestionForConnection(connection)
+    if (!prefill) return
+    setQuickAddPrefill(prefill)
+    setQuickAddOpen(true)
+    detailRef.current?.close()
+  }, [])
 
   const onCloseAll = useLockFn(() =>
     mutate(() => closeAllConnections(), {
@@ -319,7 +372,14 @@ const ConnectionsPage = () => {
           }}
         />
       )}
-      <ConnectionDetail ref={detailRef} />
+      <ConnectionDetail ref={detailRef} onAddRule={addRuleForConnection} />
+      <QuickAddRuleDialog
+        open={quickAddOpen}
+        defaultProfileUid={current?.uid}
+        prefill={quickAddPrefill ?? undefined}
+        onClose={() => setQuickAddOpen(false)}
+        onChanged={() => void refreshRules()}
+      />
       <Zoom
         in={connectionsType === 'closed' && filterConn.length > 0}
         unmountOnExit

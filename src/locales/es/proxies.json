@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "Número de nodos",
       "delayCheckReset": "Realizar prueba de latencia para cancelar la fijación",
-      "nodeCount": "{{count}} nodos"
+      "nodeCount": "{{count}} nodos",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "Nodo actual",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "URL de prueba de latencia",
       "showBasic": "Ocultar detalles del nodo",
       "showDetail": "Mostrar detalles del nodo",
-      "filter": "Filtrar nodos"
+      "filter": "Filtrar nodos",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "URL de prueba de latencia"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "No hay grupos de proxy disponibles",
       "noProxies": "Sin proxies",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "No se ha importado ninguna suscripción",
         "description": "No hay contenido para mostrar en la página de proxies. Ve a Perfiles para importar y activar una suscripción."
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "Ir a Perfiles",
         "restartCore": "Reiniciar núcleo",
-        "openLogs": "Abrir carpeta de registros"
+        "openLogs": "Abrir carpeta de registros",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Test URL must start with http:// or https://"
+      "invalidTestUrl": "Test URL must start with http:// or https://",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

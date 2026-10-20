@@ -24,7 +24,8 @@
     "actions": {
       "active": "Active",
       "closed": "Closed",
-      "closeConnection": "بستن اتصال"
+      "closeConnection": "بستن اتصال",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "ستون‌ها",

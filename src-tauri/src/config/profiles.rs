@@ -24,7 +24,7 @@ use std::{
     path::{Component, Path},
     sync::{
         LazyLock,
-        atomic::{AtomicU64, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
     },
     time::{Duration, Instant},
 };
@@ -35,6 +35,8 @@ pub(crate) static PROFILE_WRITE_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mute
 
 static ACTIVATE_SELECTED_TASK: LazyLock<Mutex<Option<JoinHandle<()>>>> = LazyLock::new(|| Mutex::new(None));
 static ACTIVATE_SELECTED_GENERATION: AtomicU64 = AtomicU64::new(0);
+/// Set when generated `sync_id`s could not be persisted during profile load.
+static SYNC_ID_SAVE_FAILED: AtomicBool = AtomicBool::new(false);
 
 // The plugin already limits the request/response phase to 5 seconds. This outer timeout also covers
 // lock acquisition, connection-pool waiting, and local-socket connection establishment.
@@ -113,9 +115,14 @@ impl IProfiles {
             Ok(mut profiles) => {
                 let items = profiles.items.get_or_insert_with(Vec::new);
                 let mut home_changed = false;
+                let mut sync_id_changed = false;
                 for item in items.iter_mut() {
                     if item.uid.is_none() {
                         item.uid = Some(help::get_uid("d").into());
+                    }
+                    if item.sync_id.is_none() {
+                        item.sync_id = Some(help::get_uid("S").into());
+                        sync_id_changed = true;
                     }
                     if item.itype.as_deref() == Some("remote") {
                         item.option
@@ -134,8 +141,16 @@ impl IProfiles {
                     }
                 }
 
-                if home_changed && let Err(err) = profiles.save_file().await {
-                    logging!(error, Type::Config, "无法保存已清理的 profiles.yaml: {err:#}");
+                if home_changed || sync_id_changed {
+                    match profiles.save_file().await {
+                        Ok(()) => SYNC_ID_SAVE_FAILED.store(false, Ordering::Release),
+                        Err(err) => {
+                            if sync_id_changed {
+                                SYNC_ID_SAVE_FAILED.store(true, Ordering::Release);
+                            }
+                            logging!(error, Type::Config, "无法保存已清理的 profiles.yaml: {err:#}");
+                        }
+                    }
                 }
                 profiles
             }
@@ -417,8 +432,27 @@ impl IProfiles {
 // These helpers serialize asynchronous operations against committed profile data.
 use crate::config::Config;
 
+pub(crate) async fn apply_default_update_interval(item: &mut PrfItem) {
+    if item.itype.as_deref() != Some("remote") {
+        return;
+    }
+    if item.option.as_ref().and_then(|option| option.update_interval).is_some() {
+        return;
+    }
+    let default = Config::verge()
+        .await
+        .latest_arc()
+        .subscription_settings
+        .as_ref()
+        .and_then(|settings| settings.default_update_interval)
+        .map(|interval| interval.max(crate::constants::profile::MIN_UPDATE_INTERVAL))
+        .unwrap_or(crate::constants::profile::MIN_UPDATE_INTERVAL);
+    item.option.get_or_insert_with(PrfOption::default).update_interval = Some(default);
+}
+
 pub(crate) async fn profiles_append_item_with_filedata_safe(item: &PrfItem, file_data: Option<String>) -> Result<()> {
     let item = &mut PrfItem::from(item, file_data).await?;
+    apply_default_update_interval(item).await;
     profiles_append_item_safe(item).await
 }
 
@@ -464,6 +498,46 @@ pub(crate) async fn profiles_save_file_safe() -> Result<()> {
             Ok((profiles, ()))
         })
         .await
+}
+
+/// Returns the stable identity, generating and persisting one for older profiles.
+pub(crate) async fn ensure_profile_sync_id(uid: &str) -> Result<String> {
+    let uid = String::from(uid);
+    Config::profiles()
+        .await
+        .with_data_modify(|mut profiles| async move {
+            let item = profiles
+                .items
+                .as_mut()
+                .and_then(|items| items.iter_mut().find(|item| item.uid.as_ref() == Some(&uid)))
+                .with_context(|| format!("failed to get the profile item \"uid:{uid}\""))?;
+
+            if let Some(sync_id) = item.sync_id.clone() {
+                if SYNC_ID_SAVE_FAILED.swap(false, Ordering::AcqRel) {
+                    if let Err(error) = profiles.save_file().await {
+                        SYNC_ID_SAVE_FAILED.store(true, Ordering::Release);
+                        return Err(error).context("failed to persist profile sync id");
+                    }
+                }
+                return Ok((profiles, sync_id));
+            }
+
+            let sync_id: String = help::get_uid("S").into();
+            item.sync_id = Some(sync_id.clone());
+            profiles.save_file().await?;
+            SYNC_ID_SAVE_FAILED.store(false, Ordering::Release);
+            Ok((profiles, sync_id))
+        })
+        .await
+}
+
+/// Read-only lookup; `None` means the profile has not been migrated yet.
+pub(crate) fn profile_sync_id(profiles: &IProfiles, uid: &str) -> Option<String> {
+    profiles
+        .items
+        .as_ref()
+        .and_then(|items| items.iter().find(|item| item.uid.as_deref() == Some(uid)))
+        .and_then(|item| item.sync_id.clone())
 }
 
 pub(crate) async fn profiles_update_item_safe(index: &str, item: &mut PrfItem) -> Result<()> {

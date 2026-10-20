@@ -24,7 +24,8 @@
     "actions": {
       "active": "Активные",
       "closed": "Закрытые",
-      "closeConnection": "Закрыть соединение"
+      "closeConnection": "Закрыть соединение",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "Столбцы",

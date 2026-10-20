@@ -24,7 +24,8 @@
     "actions": {
       "active": "Ativas",
       "closed": "Fechadas",
-      "closeConnection": "Fechar conexão"
+      "closeConnection": "Fechar conexão",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "Colunas",

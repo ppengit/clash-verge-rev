@@ -4,18 +4,22 @@ import dayjs from 'dayjs'
 import { showNotice } from '@/services/notice-service'
 import { debugLog } from '@/utils/debug'
 
-import { commands } from './bindings'
 import type {
+  CustomRuleInput,
   DownloadEvent,
   JsonValue,
   ListenerProbe,
+  NodeHealthSnapshot,
   ProxyPortSettings,
   UnlockItem,
   ProxyViewV1_Serialize as ProxyViewV1,
   ProfileSelection,
   ProfilePatch,
   ProfileCreate,
+  RuleConflictResolution,
+  RuleTargets,
 } from './bindings'
+import { commands } from './bindings'
 
 export type {
   RunningMode,
@@ -28,6 +32,33 @@ export type {
   ListenerTransport,
   ListenerProbe,
   UnlockItem,
+  ConflictAction,
+  CustomRule,
+  CustomRuleInput,
+  ProfileUpdateReport,
+  RuleConflict,
+  RuleConflictResolution,
+  RuleIssue,
+  RulePosition,
+  RuleTargets,
+  ContentProbeResult,
+  HealthKey,
+  HealthSample,
+  NodeDisplaySettings,
+  NodeHealthEntry,
+  NodeHealthSettings,
+  NodeHealthSnapshot,
+  NodeHealthState,
+  NodeVerificationResult,
+  ProbeTarget,
+  SubscriptionInfoSettings,
+  SubscriptionSettings,
+  SyncConflictCopy,
+  SyncHistoryEntry,
+  SyncRunResult,
+  SyncSettings,
+  SyncStatus,
+  TargetResult,
 } from './bindings'
 
 export async function copyClashEnv() {
@@ -84,6 +115,45 @@ export async function reorderProfile(activeId: string, overId: string) {
 
 export async function updateProfile(index: string, option?: IProfileOption) {
   return commands.updateProfile(index, option ?? null)
+}
+
+export async function resolveProfileUpdateConflicts(
+  index: string,
+  resolutions: RuleConflictResolution[],
+) {
+  return commands.resolveProfileUpdateConflicts(index, resolutions)
+}
+
+export async function cancelProfileUpdateConflicts(index: string) {
+  return commands.cancelProfileUpdateConflicts(index)
+}
+
+export async function listCustomRules(profileUid?: string | null) {
+  return commands.listCustomRules(profileUid ?? null)
+}
+
+export async function getRuleTargets(profileUid: string): Promise<RuleTargets> {
+  return commands.getRuleTargets(profileUid)
+}
+
+export async function ensureProfileSyncId(uid: string) {
+  return commands.ensureProfileSyncId(uid)
+}
+
+export async function addCustomRule(payload: CustomRuleInput) {
+  return commands.addCustomRule(payload)
+}
+
+export async function deleteCustomRule(id: string) {
+  return commands.deleteCustomRule(id)
+}
+
+export async function updateCustomRulePolicy(id: string, policy: string) {
+  return commands.updateCustomRulePolicy(id, policy)
+}
+
+export async function validateCustomRules(profileUid: string) {
+  return commands.validateCustomRules(profileUid)
 }
 
 export async function deleteProfile(index: string) {
@@ -182,6 +252,22 @@ export async function getProxyView(): Promise<ProxyViewV1> {
     throw new Error('Unsupported proxy view schema: ' + view.schemaVersion)
   }
   return view
+}
+
+export async function getNodeHealth(): Promise<NodeHealthSnapshot> {
+  return commands.getNodeHealth()
+}
+
+export async function runNodeHealthCheck(scope?: string | null) {
+  return commands.runNodeHealthCheck(scope ?? null)
+}
+
+export async function verifyNode(
+  profileUid: string | null,
+  group: string,
+  node: string,
+) {
+  return commands.verifyNode(profileUid, group, node)
 }
 
 export async function getClashLogs() {
@@ -445,6 +531,26 @@ export async function listWebDavBackup() {
 
 export async function listLocalBackup() {
   return commands.listLocalBackup()
+}
+
+export async function getSyncStatus() {
+  return commands.getSyncStatus()
+}
+
+export async function syncNow() {
+  return commands.syncNow()
+}
+
+export async function testWebdavSync() {
+  return commands.testWebdavSync()
+}
+
+export async function listSyncHistory() {
+  return commands.listSyncHistory()
+}
+
+export async function restoreSyncHistory(filename: string) {
+  return commands.restoreSyncHistory(filename)
 }
 
 /** Consistent core/service snapshot with backend-derived availability flags. */

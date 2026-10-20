@@ -8,7 +8,25 @@
         "update": "更新"
       }
     },
-    "title": "规则"
+    "title": "规则",
+    "actions": {
+      "addRule": "添加规则",
+      "menu": "规则操作",
+      "copyRule": "复制规则",
+      "rebindPolicy": "更换策略",
+      "deleteRule": "删除规则"
+    },
+    "badges": {
+      "subscription": "订阅",
+      "legacy": "旧版自定义",
+      "custom": "自定义",
+      "global": "全局"
+    },
+    "filters": {
+      "all": "全部",
+      "custom": "自定义",
+      "subscription": "订阅"
+    }
   },
   "feedback": {
     "notifications": {
@@ -18,10 +36,49 @@
         "genericError": "更新失败: {{message}}",
         "none": "没有可更新的规则集合",
         "allUpdated": "所有规则集合均已更新"
-      }
+      },
+      "ruleCopied": "规则已复制",
+      "ruleDeleted": "规则已删除"
     }
   },
   "modals": {
+    "quickAdd": {
+      "title": "添加规则",
+      "currentProfile": "当前",
+      "advanced": "高级",
+      "applyToAll": "应用到所有订阅（仅内置策略）",
+      "preview": "预览",
+      "duplicateHint": "已存在完全相同的规则（{{id}}）。",
+      "subscriptionHint": "订阅中已有匹配该值的规则，新规则会按所选位置插入。",
+      "fields": {
+        "profile": "目标订阅",
+        "type": "规则类型",
+        "value": "规则内容",
+        "policy": "策略",
+        "position": "插入位置"
+      },
+      "position": {
+        "prepend": "前置（顶部）",
+        "append": "后置（MATCH 之前）"
+      },
+      "actions": {
+        "add": "添加",
+        "undo": "撤销"
+      },
+      "validation": {
+        "profileRequired": "请选择目标订阅",
+        "valueRequired": "请填写规则内容",
+        "invalidValue": "规则内容对该类型无效",
+        "policyRequired": "请选择策略",
+        "unknownPolicy": "该订阅中不存在此策略",
+        "duplicate": "该位置已存在完全相同的规则",
+        "globalBuiltinOnly": "全局规则仅支持内置策略"
+      },
+      "feedback": {
+        "added": "规则已添加，当前订阅将立即生效。",
+        "undone": "规则已删除"
+      }
+    },
     "editor": {
       "form": {
         "labels": {

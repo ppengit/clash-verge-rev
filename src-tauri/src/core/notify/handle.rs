@@ -40,6 +40,8 @@ impl Handle {
     }
 
     pub fn refresh_clash() {
+        // A new runtime config may rename or remove groups; drop in-flight health results.
+        crate::core::node_health::NodeHealthManager::global().invalidate();
         super::announce(super::Refresh::Clash);
     }
 
@@ -56,9 +58,15 @@ impl Handle {
     }
 
     pub fn notify_profile_changed(profile_id: &String) {
+        // Health results belong to one profile; in-flight probes must not report into the next one.
+        crate::core::node_health::NodeHealthManager::global().invalidate();
         Self::send_event(FrontendEvent::ProfileChanged {
             current_profile_id: profile_id,
         });
+    }
+
+    pub fn notify_node_health_updated(generation: u64) {
+        Self::send_event(FrontendEvent::NodeHealthUpdated { generation });
     }
 
     pub fn notify_timer_updated(profile_index: &String) {

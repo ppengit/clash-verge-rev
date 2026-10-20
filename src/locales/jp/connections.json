@@ -24,7 +24,8 @@
     "actions": {
       "active": "Active",
       "closed": "Closed",
-      "closeConnection": "接続を閉じる"
+      "closeConnection": "接続を閉じる",
+      "addRule": "Add rule for this connection"
     },
     "columnManager": {
       "title": "列",

@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "Quantidade de proxies",
       "delayCheckReset": "Teste de latência para cancelar a fixação",
-      "nodeCount": "{{count}} nós"
+      "nodeCount": "{{count}} nós",
+      "hiddenCount": "{{count}} nodes hidden by the display filter"
+    },
+    "health": {
+      "states": {
+        "healthy": "Healthy",
+        "degraded": "Degraded",
+        "unusable": "Unusable",
+        "siteBlocked": "Site blocked",
+        "unverified": "Unverified",
+        "testing": "Testing"
+      },
+      "failedTargets": "Failed targets: {{targets}}",
+      "delay": "Delay: {{delay}} ms"
     },
     "tooltips": {
       "locate": "localizar",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "URL do teste de latência",
       "showBasic": "Proxy básico",
       "showDetail": "Proxy detalhado",
-      "filter": "Filtro"
+      "filter": "Filtro",
+      "hideUnavailableNodes": "Hide unavailable nodes",
+      "showAllNodes": "Show all nodes"
     },
     "placeholders": {
       "delayCheckUrl": "URL do teste de latência"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "Nenhum grupo de proxy disponível",
       "noProxies": "Nenhum proxy",
+      "allHidden": "All nodes are hidden by the display filter",
       "noSubscriptions": {
         "title": "Nenhuma assinatura importada",
         "description": "Não há nada para exibir na página Proxies. Vá para Perfis para importar e ativar uma assinatura."
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "Ir para Perfis",
         "restartCore": "Reiniciar núcleo",
-        "openLogs": "Abrir pasta de logs"
+        "openLogs": "Abrir pasta de logs",
+        "showAll": "Show all"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "A URL de teste deve começar com http:// ou https://"
+      "invalidTestUrl": "A URL de teste deve começar com http:// ou https://",
+      "unhealthyNode": "{{node}} is {{state}}. Consider selecting another node.",
+      "unhealthyNodeWithAlternatives": "{{node}} is {{state}}. Healthy alternatives: {{alternatives}}"
     },
     "notifications": {
       "provider": {

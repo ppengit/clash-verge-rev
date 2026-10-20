@@ -224,6 +224,127 @@ pub struct IVerge {
     pub hover_jump_navigator_delay: Option<u64>,
 
     pub enable_external_controller: Option<bool>,
+
+    /// Subscription update defaults.
+    pub subscription_settings: Option<SubscriptionSettings>,
+
+    /// Scheduled node health verification and selected-node checks.
+    pub node_health_settings: Option<NodeHealthSettings>,
+
+    /// Global node visibility defaults.
+    pub node_display_settings: Option<NodeDisplaySettings>,
+
+    /// Subscription traffic and expiry presentation.
+    pub subscription_info_settings: Option<SubscriptionInfoSettings>,
+
+    /// Scheduled WebDAV sync of user-owned configuration.
+    pub sync_settings: Option<SyncSettings>,
+}
+
+#[derive(Default, Debug, Clone, Deserialize, Serialize, specta::Type)]
+#[serde(default)]
+pub struct SubscriptionSettings {
+    /// Default auto-update interval in minutes for new subscriptions.
+    pub default_update_interval: Option<u64>,
+    pub update_on_startup: Option<bool>,
+    pub update_only_current: Option<bool>,
+    pub notify_on_failure: Option<bool>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, specta::Type)]
+#[serde(default)]
+pub struct ProbeTarget {
+    pub url: std::string::String,
+    /// `204`, `200`, `200-299`, or a `/`-separated combination.
+    pub expected: std::string::String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keyword: Option<std::string::String>,
+    pub timeout_ms: Option<u32>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, specta::Type)]
+#[serde(default)]
+pub struct NodeHealthSettings {
+    pub enabled: Option<bool>,
+    /// L1 (link/latency) interval in minutes.
+    pub interval_minutes: Option<u64>,
+    /// L2 (real-site status) interval in minutes.
+    pub deep_interval_minutes: Option<u64>,
+    /// `current_node`, `current_group`, or `all_groups`.
+    pub scope: Option<std::string::String>,
+    pub l1_targets: Option<Vec<ProbeTarget>>,
+    pub l2_targets: Option<Vec<ProbeTarget>>,
+    pub verify_on_select: Option<bool>,
+    pub auto_failover: Option<bool>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, specta::Type)]
+#[serde(default)]
+pub struct NodeDisplaySettings {
+    pub hide_timeout: Option<bool>,
+    pub hide_untested: Option<bool>,
+    pub hide_unhealthy: Option<bool>,
+    /// Hides nodes slower than this threshold; zero disables the filter.
+    pub hide_slow_ms: Option<u16>,
+    pub default_sort: Option<u8>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, specta::Type)]
+#[serde(default)]
+pub struct SubscriptionInfoSettings {
+    pub show_traffic: Option<bool>,
+    pub expiry_warning_days: Option<u64>,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, Serialize, specta::Type)]
+#[serde(default)]
+pub struct SyncSettings {
+    pub enabled: Option<bool>,
+    /// `two_way`, `upload`, or `download`.
+    #[specta(type = Option<std::string::String>)]
+    pub mode: Option<std::string::String>,
+    /// `subscriptions`, `overrides`, `custom_rules`, `settings`.
+    #[specta(type = Option<Vec<std::string::String>>)]
+    pub scopes: Option<Vec<std::string::String>>,
+    pub interval_minutes: Option<u64>,
+    pub on_startup: Option<bool>,
+    pub on_change: Option<bool>,
+    /// `last_modified`, `local`, `remote`, or `ask`.
+    #[specta(type = Option<std::string::String>)]
+    pub conflict_policy: Option<std::string::String>,
+    #[specta(type = Option<std::string::String>)]
+    pub device_name: Option<std::string::String>,
+    pub encrypt: Option<bool>,
+    /// Local-only payload password; never included in the synced payload.
+    #[serde(
+        serialize_with = "serialize_encrypted",
+        deserialize_with = "deserialize_encrypted",
+        skip_serializing_if = "Option::is_none",
+        default
+    )]
+    #[specta(type = Option<std::string::String>)]
+    pub password: Option<std::string::String>,
+    /// Explicit opt-in for self-signed WebDAV certificates; verification stays on by default.
+    pub danger_accept_invalid_certs: Option<bool>,
+}
+
+impl SyncSettings {
+    fn patch_config(&mut self, patch: &Self) {
+        merge_option(&mut self.enabled, &patch.enabled);
+        merge_option(&mut self.mode, &patch.mode);
+        merge_option(&mut self.scopes, &patch.scopes);
+        merge_option(&mut self.interval_minutes, &patch.interval_minutes);
+        merge_option(&mut self.on_startup, &patch.on_startup);
+        merge_option(&mut self.on_change, &patch.on_change);
+        merge_option(&mut self.conflict_policy, &patch.conflict_policy);
+        merge_option(&mut self.device_name, &patch.device_name);
+        merge_option(&mut self.encrypt, &patch.encrypt);
+        merge_option(&mut self.password, &patch.password);
+        merge_option(
+            &mut self.danger_accept_invalid_certs,
+            &patch.danger_accept_invalid_certs,
+        );
+    }
 }
 
 #[derive(Default, Debug, Clone, Deserialize, Serialize, specta::Type)]
@@ -262,6 +383,51 @@ pub struct IVergeTheme {
     pub font_family: Option<String>,
     #[specta(type = Option<std::string::String>)]
     pub css_injection: Option<String>,
+}
+
+fn merge_option<T: Clone>(target: &mut Option<T>, incoming: &Option<T>) {
+    if incoming.is_some() {
+        *target = incoming.clone();
+    }
+}
+
+impl SubscriptionSettings {
+    fn patch_config(&mut self, patch: &Self) {
+        merge_option(&mut self.default_update_interval, &patch.default_update_interval);
+        merge_option(&mut self.update_on_startup, &patch.update_on_startup);
+        merge_option(&mut self.update_only_current, &patch.update_only_current);
+        merge_option(&mut self.notify_on_failure, &patch.notify_on_failure);
+    }
+}
+
+impl NodeHealthSettings {
+    fn patch_config(&mut self, patch: &Self) {
+        merge_option(&mut self.enabled, &patch.enabled);
+        merge_option(&mut self.interval_minutes, &patch.interval_minutes);
+        merge_option(&mut self.deep_interval_minutes, &patch.deep_interval_minutes);
+        merge_option(&mut self.scope, &patch.scope);
+        merge_option(&mut self.l1_targets, &patch.l1_targets);
+        merge_option(&mut self.l2_targets, &patch.l2_targets);
+        merge_option(&mut self.verify_on_select, &patch.verify_on_select);
+        merge_option(&mut self.auto_failover, &patch.auto_failover);
+    }
+}
+
+impl NodeDisplaySettings {
+    fn patch_config(&mut self, patch: &Self) {
+        merge_option(&mut self.hide_timeout, &patch.hide_timeout);
+        merge_option(&mut self.hide_untested, &patch.hide_untested);
+        merge_option(&mut self.hide_unhealthy, &patch.hide_unhealthy);
+        merge_option(&mut self.hide_slow_ms, &patch.hide_slow_ms);
+        merge_option(&mut self.default_sort, &patch.default_sort);
+    }
+}
+
+impl SubscriptionInfoSettings {
+    fn patch_config(&mut self, patch: &Self) {
+        merge_option(&mut self.show_traffic, &patch.show_traffic);
+        merge_option(&mut self.expiry_warning_days, &patch.expiry_warning_days);
+    }
 }
 
 impl IVerge {
@@ -422,6 +588,70 @@ impl IVerge {
             enable_dns_settings: Some(false),
             home_cards: None,
             enable_external_controller: Some(false),
+            subscription_settings: Some(SubscriptionSettings {
+                default_update_interval: Some(1440),
+                update_on_startup: Some(false),
+                update_only_current: Some(false),
+                notify_on_failure: Some(true),
+            }),
+            node_health_settings: Some(NodeHealthSettings {
+                enabled: Some(false),
+                interval_minutes: Some(10),
+                deep_interval_minutes: Some(60),
+                scope: Some("current_group".into()),
+                l1_targets: Some(vec![ProbeTarget {
+                    url: "https://cp.cloudflare.com/generate_204".into(),
+                    expected: "204".into(),
+                    keyword: None,
+                    timeout_ms: None,
+                }]),
+                l2_targets: Some(vec![
+                    ProbeTarget {
+                        url: "https://www.google.com/robots.txt".into(),
+                        expected: "200".into(),
+                        keyword: None,
+                        timeout_ms: None,
+                    },
+                    ProbeTarget {
+                        url: "https://github.com/favicon.ico".into(),
+                        expected: "200".into(),
+                        keyword: None,
+                        timeout_ms: None,
+                    },
+                    ProbeTarget {
+                        url: "https://www.cloudflare.com/cdn-cgi/trace".into(),
+                        expected: "200".into(),
+                        keyword: None,
+                        timeout_ms: None,
+                    },
+                ]),
+                verify_on_select: Some(true),
+                auto_failover: Some(false),
+            }),
+            node_display_settings: Some(NodeDisplaySettings {
+                hide_timeout: Some(false),
+                hide_untested: Some(false),
+                hide_unhealthy: Some(false),
+                hide_slow_ms: Some(0),
+                default_sort: Some(0),
+            }),
+            subscription_info_settings: Some(SubscriptionInfoSettings {
+                show_traffic: Some(true),
+                expiry_warning_days: Some(3),
+            }),
+            sync_settings: Some(SyncSettings {
+                enabled: Some(false),
+                mode: Some("two_way".into()),
+                scopes: Some(vec!["subscriptions".into(), "overrides".into(), "custom_rules".into()]),
+                interval_minutes: Some(360),
+                on_startup: Some(true),
+                on_change: Some(false),
+                conflict_policy: Some("last_modified".into()),
+                device_name: None,
+                encrypt: Some(false),
+                password: None,
+                danger_accept_invalid_certs: Some(false),
+            }),
             ..Self::default()
         }
     }
@@ -524,6 +754,37 @@ impl IVerge {
         patch!(enable_dns_settings);
         patch!(home_cards);
         patch!(enable_external_controller);
+
+        if let Some(incoming) = patch.subscription_settings.as_ref() {
+            match self.subscription_settings.as_mut() {
+                Some(current) => current.patch_config(incoming),
+                None => self.subscription_settings = Some(incoming.clone()),
+            }
+        }
+        if let Some(incoming) = patch.node_health_settings.as_ref() {
+            match self.node_health_settings.as_mut() {
+                Some(current) => current.patch_config(incoming),
+                None => self.node_health_settings = Some(incoming.clone()),
+            }
+        }
+        if let Some(incoming) = patch.node_display_settings.as_ref() {
+            match self.node_display_settings.as_mut() {
+                Some(current) => current.patch_config(incoming),
+                None => self.node_display_settings = Some(incoming.clone()),
+            }
+        }
+        if let Some(incoming) = patch.subscription_info_settings.as_ref() {
+            match self.subscription_info_settings.as_mut() {
+                Some(current) => current.patch_config(incoming),
+                None => self.subscription_info_settings = Some(incoming.clone()),
+            }
+        }
+        if let Some(incoming) = patch.sync_settings.as_ref() {
+            match self.sync_settings.as_mut() {
+                Some(current) => current.patch_config(incoming),
+                None => self.sync_settings = Some(incoming.clone()),
+            }
+        }
     }
 
     pub fn get_log_level(&self) -> LevelFilter {
@@ -540,5 +801,62 @@ impl IVerge {
         } else {
             LevelFilter::Info
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn nested_settings_patches_only_overwrite_present_fields() {
+        let mut config = IVerge::template();
+        let patch = IVerge {
+            node_health_settings: Some(NodeHealthSettings {
+                enabled: Some(true),
+                interval_minutes: Some(5),
+                ..NodeHealthSettings::default()
+            }),
+            node_display_settings: Some(NodeDisplaySettings {
+                hide_timeout: Some(true),
+                ..NodeDisplaySettings::default()
+            }),
+            sync_settings: Some(SyncSettings {
+                enabled: Some(true),
+                ..SyncSettings::default()
+            }),
+            ..IVerge::default()
+        };
+
+        config.patch_config(&patch);
+
+        let health = config.node_health_settings.as_ref();
+        assert_eq!(health.and_then(|settings| settings.enabled), Some(true));
+        assert_eq!(health.and_then(|settings| settings.interval_minutes), Some(5));
+        assert_eq!(health.and_then(|settings| settings.deep_interval_minutes), Some(60));
+        assert_eq!(
+            health.and_then(|settings| settings.scope.as_deref()),
+            Some("current_group")
+        );
+        assert_eq!(
+            health.and_then(|settings| settings.l1_targets.as_ref().map(Vec::len)),
+            Some(1)
+        );
+
+        let display = config.node_display_settings.as_ref();
+        assert_eq!(display.and_then(|settings| settings.hide_timeout), Some(true));
+        assert_eq!(display.and_then(|settings| settings.hide_untested), Some(false));
+        assert_eq!(display.and_then(|settings| settings.hide_slow_ms), Some(0));
+
+        let sync = config.sync_settings.as_ref();
+        assert_eq!(sync.and_then(|settings| settings.enabled), Some(true));
+        assert_eq!(sync.and_then(|settings| settings.mode.as_deref()), Some("two_way"));
+        assert_eq!(sync.and_then(|settings| settings.interval_minutes), Some(360));
+        assert_eq!(sync.and_then(|settings| settings.on_startup), Some(true));
+        assert_eq!(sync.and_then(|settings| settings.on_change), Some(false));
+        assert_eq!(
+            sync.and_then(|settings| settings.scopes.as_ref().map(Vec::len)),
+            Some(3)
+        );
     }
 }

@@ -4,7 +4,8 @@
       "updateAll": "Atualizar todos os perfis",
       "viewRuntimeConfig": "Ver configuração em execução",
       "reactivate": "Reativar perfis",
-      "import": "Importar"
+      "import": "Importar",
+      "subscriptionSettings": "Subscription & node settings"
     },
     "batch": {
       "actions": {
@@ -216,6 +217,27 @@
     },
     "qrViewer": {
       "title": "QR Code da assinatura"
+    },
+    "updateConflict": {
+      "title": "Subscription update needs attention",
+      "description": "Custom rules reference groups or rule providers that the new subscription no longer provides. Choose how to resolve each rule before the update is applied.",
+      "fields": {
+        "policy": "New policy"
+      },
+      "actions": {
+        "keep": "Choose an action",
+        "remap": "Remap policy",
+        "delete": "Delete rule",
+        "apply": "Apply update"
+      },
+      "errors": {
+        "unresolved": "Resolve every conflict or cancel the update",
+        "remaining": "Some rules still conflict with the new subscription",
+        "unresolvable": "This rule cannot be fixed by changing its policy. Delete it or cancel the update."
+      },
+      "feedback": {
+        "updated": "Subscription updated"
+      }
     }
   }
 }

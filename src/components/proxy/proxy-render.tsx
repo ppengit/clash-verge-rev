@@ -6,6 +6,7 @@ import {
 import {
   alpha,
   Box,
+  Button,
   ListItemText,
   ListItemButton,
   Typography,
@@ -170,6 +171,26 @@ export const ProxyRender = memo(function ProxyRender(props: RenderProps) {
             alignItems: 'center',
           }}
         >
+          {(item.hiddenCount ?? 0) > 0 && (
+            <Tooltip
+              title={t('proxies.page.labels.hiddenCount', {
+                count: item.hiddenCount,
+              })}
+              arrow
+            >
+              <Chip
+                size="small"
+                label={`+${item.hiddenCount}`}
+                sx={{
+                  mr: 0.5,
+                  opacity: 0.7,
+                  backgroundColor: (theme) =>
+                    alpha(theme.palette.text.secondary, 0.12),
+                  color: 'text.secondary',
+                }}
+              />
+            </Tooltip>
+          )}
           <Chip
             size="small"
             label={`${group.members.length}`}
@@ -271,6 +292,7 @@ export const ProxyRender = memo(function ProxyRender(props: RenderProps) {
   }
 
   if (type === 3) {
+    const hiddenCount = item.hiddenCount ?? 0
     return (
       <Box
         sx={{
@@ -284,8 +306,24 @@ export const ProxyRender = memo(function ProxyRender(props: RenderProps) {
       >
         <InboxRounded sx={{ fontSize: '2.5em', color: 'inherit' }} />
         <Typography sx={{ color: 'inherit' }}>
-          {t('proxies.page.empty.noProxies')}
+          {hiddenCount > 0
+            ? t('proxies.page.empty.allHidden')
+            : t('proxies.page.empty.noProxies')}
         </Typography>
+        {hiddenCount > 0 && (
+          <Button
+            size="small"
+            sx={{ mt: 1 }}
+            onClick={() =>
+              onHeadState?.(group.name, {
+                hideUnavailable: false,
+                bypassHide: true,
+              })
+            }
+          >
+            {t('proxies.page.empty.actions.showAll')}
+          </Button>
+        )}
       </Box>
     )
   }

@@ -28,6 +28,10 @@ pub async fn save_webdav_config(
     let verge_data = Config::verge().await.data_arc();
     verge_data.save_file().await.stringify_err()?;
     core::backup::WebDavClient::global().reset();
+    crate::core::sync::SyncManager::global()
+        .refresh_settings()
+        .await
+        .stringify_err()?;
     Ok(())
 }
 

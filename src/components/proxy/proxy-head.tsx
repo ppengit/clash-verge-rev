@@ -49,7 +49,6 @@ export const ProxyHead = ({
 }: Props) => {
   const {
     showType,
-    sortType,
     filterText,
     textState,
     testUrl,
@@ -68,9 +67,11 @@ export const ProxyHead = ({
   }, [])
 
   const { verge } = useVerge()
+  const sortType =
+    headState.sortType ?? verge?.node_display_settings?.default_sort ?? 0
   const defaultLatencyUrl =
     verge?.default_latency_test?.trim() ||
-    'http://cp.cloudflare.com/generate_204'
+    'https://cp.cloudflare.com/generate_204'
 
   useEffect(() => {
     delayManager.setUrl(

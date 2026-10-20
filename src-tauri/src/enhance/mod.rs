@@ -1,5 +1,6 @@
 use crate::core::notify::NoticeStatus;
 mod chain;
+pub mod custom_rules;
 pub mod field;
 mod merge;
 mod script;
@@ -59,6 +60,7 @@ struct ProfileItems {
     global_merge: ChainItem,
     global_script: ChainItem,
     profile_name: String,
+    sync_id: Option<String>,
 }
 
 impl Default for ProfileItems {
@@ -94,6 +96,7 @@ impl Default for ProfileItems {
                 uid: "Script".into(),
                 data: ChainType::Script(tmpl::ITEM_SCRIPT.into()),
             },
+            sync_id: None,
         }
     }
 }
@@ -198,6 +201,7 @@ async fn collect_profile_items(profiles: &IProfiles) -> Result<ProfileItems> {
         .unwrap_or_else(|| "Groups".into());
 
     let name = current_item.name.clone().unwrap_or_default();
+    let sync_id = current_item.sync_id.clone();
 
     let (merge_item, script_item, rules_item, proxies_item, groups_item, global_merge, global_script) = tokio::join!(
         chain_item_or_default(profiles.get_item(&merge_uid).ok(), || ChainItem {
@@ -240,6 +244,7 @@ async fn collect_profile_items(profiles: &IProfiles) -> Result<ProfileItems> {
         global_merge,
         global_script,
         profile_name: name,
+        sync_id,
     })
 }
 
@@ -910,6 +915,7 @@ pub async fn enhance(
     let global_merge = profile.global_merge;
     let global_script = profile.global_script;
     let profile_name = profile.profile_name;
+    let sync_id = profile.sync_id;
 
     let result_map = HashMap::new();
 
@@ -956,6 +962,8 @@ pub async fn enhance(
         &authoritative,
     )
     .await;
+
+    let (config, _custom_rule_issues) = custom_rules::apply_custom_rules(config, sync_id.as_deref()).await;
 
     notify_discarded_keys(authoritative.overridden(&authoritative, &authoritative.current(&config)));
     let config = authoritative.enforce(config);

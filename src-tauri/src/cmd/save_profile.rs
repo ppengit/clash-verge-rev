@@ -89,6 +89,10 @@ pub async fn save_profile_file(
         AutoBackupManager::trigger_backup(trigger);
     }
 
+    if changes_applied.is_valid() {
+        crate::core::sync::SyncManager::notify_local_change();
+    }
+
     Ok(changes_applied)
 }
 

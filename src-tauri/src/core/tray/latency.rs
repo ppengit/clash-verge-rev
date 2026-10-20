@@ -11,7 +11,7 @@ use crate::{
 };
 
 const TRAY_DELAY_TEST_CONCURRENCY: usize = 10;
-const TRAY_DEFAULT_LATENCY_URL: &str = "http://cp.cloudflare.com/generate_204";
+const TRAY_DEFAULT_LATENCY_URL: &str = "https://cp.cloudflare.com/generate_204";
 
 fn is_latency_test_url(raw: &str) -> bool {
     let raw = raw.trim();

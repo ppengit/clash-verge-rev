@@ -35,6 +35,9 @@ pub enum FrontendEvent<'a> {
         state: crate::core::runstate::RunStateView,
     },
     PendingFailuresChanged,
+    NodeHealthUpdated {
+        generation: u64,
+    },
     #[cfg(target_os = "linux")]
     ThemeChanged {
         theme: tauri::Theme,
@@ -412,6 +415,11 @@ fn sample_frontend_events(uid: &String) -> Vec<(FrontendEvent<'_>, &'static str,
             json!(null),
         ),
         (
+            FrontendEvent::NodeHealthUpdated { generation: 7 },
+            "verge://node-health-updated",
+            json!({ "generation": 7 }),
+        ),
+        (
             FrontendEvent::ProfileChanged {
                 current_profile_id: uid,
             },
@@ -463,6 +471,12 @@ frontend_events! {
     profile_completed: ProfileUpdatePayload = "profile-update-completed", FrontendEvent::ProfileUpdateCompleted { uid } => ProfileUpdatePayload { uid: uid.to_string() };
     run_state: crate::core::runstate::RunStateView = "verge://run-state-changed", FrontendEvent::RunStateChanged { state } => state;
     pending_failures: () = "verge://pending-failures-changed", FrontendEvent::PendingFailuresChanged => ();
+    node_health_updated: NodeHealthEventPayload = "verge://node-health-updated", FrontendEvent::NodeHealthUpdated { generation } => NodeHealthEventPayload { generation };
+}
+
+#[derive(serde::Serialize, specta::Type)]
+pub struct NodeHealthEventPayload {
+    pub generation: u64,
 }
 
 #[derive(serde::Serialize, specta::Type)]

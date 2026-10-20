@@ -4,7 +4,8 @@
       "updateAll": "更新所有订阅",
       "viewRuntimeConfig": "查看运行时订阅",
       "reactivate": "重新激活订阅",
-      "import": "导入"
+      "import": "导入",
+      "subscriptionSettings": "订阅与节点设置"
     },
     "batch": {
       "actions": {
@@ -216,6 +217,27 @@
     },
     "qrViewer": {
       "title": "订阅二维码"
+    },
+    "updateConflict": {
+      "title": "订阅更新需要处理",
+      "description": "自定义规则引用的策略组或规则集合在新订阅中已不存在。请先选择每条规则的处理方式，再应用更新。",
+      "fields": {
+        "policy": "新策略"
+      },
+      "actions": {
+        "keep": "选择操作",
+        "remap": "更换策略",
+        "delete": "删除规则",
+        "apply": "应用更新"
+      },
+      "errors": {
+        "unresolved": "请处理所有冲突或取消更新",
+        "remaining": "仍有规则与新订阅冲突",
+        "unresolvable": "这条规则无法通过更换策略修复。请删除该规则或取消更新。"
+      },
+      "feedback": {
+        "updated": "订阅已更新"
+      }
     }
   }
 }

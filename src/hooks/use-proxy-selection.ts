@@ -33,7 +33,7 @@ const cleanupConnections = async (previousProxy: string) => {
 }
 
 interface ProxySelectionOptions {
-  onSuccess?: () => void
+  onSuccess?: (selection: { groupName: string; proxyName: string }) => void
   onError?: (error: any) => void
   enableConnectionCleanup?: boolean
 }
@@ -86,7 +86,7 @@ export const useProxySelection = (options: ProxySelectionOptions = {}) => {
           { id: `select-proxy-node:${groupName}`, errorNotice: false },
         )
         if (!result.ok) return
-        onSuccess?.()
+        onSuccess?.({ groupName, proxyName })
         syncTraySelection()
         if (isFixedProxy) {
           await forgetSelection(groupName)

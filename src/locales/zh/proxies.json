@@ -26,7 +26,20 @@
     "labels": {
       "proxyCount": "节点数量",
       "delayCheckReset": "进行延迟测试，以取消固定",
-      "nodeCount": "{{count}} 个节点"
+      "nodeCount": "{{count}} 个节点",
+      "hiddenCount": "{{count}} 个节点被显示过滤器隐藏"
+    },
+    "health": {
+      "states": {
+        "healthy": "健康",
+        "degraded": "降级",
+        "unusable": "不可用",
+        "siteBlocked": "站点拦截",
+        "unverified": "未验证",
+        "testing": "测试中"
+      },
+      "failedTargets": "失败的目标：{{targets}}",
+      "delay": "延迟：{{delay}} 毫秒"
     },
     "tooltips": {
       "locate": "当前节点",
@@ -37,7 +50,9 @@
       "delayCheckUrl": "延迟测试链接",
       "showBasic": "隐藏节点细节",
       "showDetail": "展示节点细节",
-      "filter": "过滤节点"
+      "filter": "过滤节点",
+      "hideUnavailableNodes": "隐藏不可用节点",
+      "showAllNodes": "显示全部节点"
     },
     "placeholders": {
       "delayCheckUrl": "延迟测试链接"
@@ -45,6 +60,7 @@
     "empty": {
       "noAvailableGroups": "暂无可用代理组",
       "noProxies": "暂无代理",
+      "allHidden": "所有节点均已被显示过滤器隐藏",
       "noSubscriptions": {
         "title": "尚未导入订阅",
         "description": "代理页没有可展示的内容。请先前往“订阅”页面导入并启用订阅。"
@@ -64,7 +80,8 @@
       "actions": {
         "openProfiles": "前往订阅",
         "restartCore": "重启内核",
-        "openLogs": "打开日志目录"
+        "openLogs": "打开日志目录",
+        "showAll": "显示全部"
       }
     },
     "chain": {
@@ -92,7 +109,9 @@
   },
   "feedback": {
     "warnings": {
-      "invalidTestUrl": "Test URL must start with http:// or https://"
+      "invalidTestUrl": "Test URL must start with http:// or https://",
+      "unhealthyNode": "{{node}} 当前为{{state}}，建议选择其他节点。",
+      "unhealthyNodeWithAlternatives": "{{node}} 当前为{{state}}。健康节点：{{alternatives}}"
     },
     "notifications": {
       "provider": {

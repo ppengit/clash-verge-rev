@@ -9,6 +9,35 @@
     "title": "设置"
   },
   "sections": {
+    "subscription": {
+      "title": "订阅与节点",
+      "fields": {
+        "updates": "订阅更新",
+        "health": "定时测试与健康检查",
+        "display": "节点显示",
+        "info": "订阅信息"
+      },
+      "summaries": {
+        "updates": "默认更新间隔：{{interval}} 分钟",
+        "healthEnabled": "后台每 {{interval}} 分钟检查一次",
+        "healthDisabled": "定时健康检查已关闭",
+        "display": "控制超时、未测试、不健康和慢速节点的显示",
+        "infoEnabled": "显示流量 · 过期前 {{days}} 天提醒",
+        "infoDisabled": "订阅信息已隐藏"
+      }
+    },
+    "sync": {
+      "title": "云同步",
+      "fields": {
+        "settings": "同步设置"
+      },
+      "summaries": {
+        "enabled": "已启用 · 上次同步 {{time}}",
+        "disabled": "未启用",
+        "never": "从未",
+        "lastError": "最近错误：{{error}}"
+      }
+    },
     "system": {
       "title": "系统设置",
       "toggles": {
@@ -194,7 +223,7 @@
           "versionCopied": "Verge 版本已复制到剪贴板"
         },
         "fields": {
-          "backupSetting": "备份设置",
+          "backupSetting": "备份与同步",
           "runtimeConfig": "当前配置",
           "openConfDir": "配置目录",
           "openCoreDir": "内核目录",
@@ -326,7 +355,7 @@
       }
     },
     "backup": {
-      "title": "备份设置",
+      "title": "备份与同步",
       "tabs": {
         "local": "本地备份",
         "webdav": "WebDAV 备份"
@@ -404,6 +433,136 @@
         "rowsPerPage": "每页行数"
       }
     },
+    "sync": {
+      "title": "云同步",
+      "description": "通过 WebDAV 的 clash-verge-sync 目录同步用户自有配置。已获取的代理内容、流量、到期时间和设备本地设置都不会上传。这不是「备份与同步」中的备份功能：备份是在 clash-verge-rev-backup 下的完整手动快照。",
+      "sections": {
+        "status": "同步状态",
+        "connection": "WebDAV 连接",
+        "scopes": "同步范围",
+        "behavior": "同步行为",
+        "security": "安全",
+        "conflicts": "冲突副本"
+      },
+      "fields": {
+        "enabled": "启用定时同步",
+        "state": "状态",
+        "lastRevision": "上次版本",
+        "lastSyncedAt": "上次同步",
+        "remote": "云端",
+        "lastError": "最近错误",
+        "webdavUrl": "WebDAV 服务器地址",
+        "username": "用户名",
+        "password": "密码",
+        "mode": "同步模式",
+        "interval": "间隔（分钟）",
+        "onStartup": "启动时同步",
+        "onChange": "本地变更后同步",
+        "conflictPolicy": "冲突策略",
+        "deviceName": "设备名称",
+        "encrypt": "加密云端负载",
+        "encryptionPassword": "负载密码",
+        "dangerAcceptInvalidCerts": "接受无效证书"
+      },
+      "helpers": {
+        "enabled": "在后台运行，不会重启应用。",
+        "reuseBackupAccount": "复用「备份与同步」中的 WebDAV 账户。凭据只保存在本设备，不会同步。",
+        "configureInBackup": "请先在「备份与同步」中配置或修改 WebDAV 账户。",
+        "testSavedAccount": "测试连接使用已保存的账户；请先保存修改。",
+        "scopeSubscriptions": "名称、URL、更新选项和排序。代理内容由各设备自行获取。",
+        "scopeOverrides": "全局及每个配置文件的 Script、Merge、Proxies、Groups 覆写。",
+        "scopeCustomRules": "custom-rules.yaml 规则及其依赖的覆写文件。",
+        "scopeSettings": "可选的共享设置白名单。设备本地设置始终保留在本机。",
+        "scopesNever": "已获取的代理内容永远不会同步；每台设备使用自己的 URL 获取订阅。",
+        "interval": "最少 15 分钟。",
+        "onStartup": "应用完成初始化后运行。",
+        "onChange": "本地订阅或覆写修改后延迟触发。",
+        "deviceName": "默认使用系统主机名，最多 32 个字符。",
+        "encryption": "可选。负载密码只保存在本设备。",
+        "dangerAcceptInvalidCerts": "仅在你信任该自签名证书时启用。"
+      },
+      "options": {
+        "mode": {
+          "twoWay": "双向同步",
+          "upload": "仅上传",
+          "download": "仅下载"
+        },
+        "conflictPolicy": {
+          "lastModified": "最后修改优先",
+          "local": "保留本地",
+          "remote": "保留云端",
+          "ask": "询问"
+        },
+        "scopes": {
+          "subscriptions": "订阅",
+          "overrides": "覆写",
+          "customRules": "自定义规则",
+          "settings": "应用设置"
+        }
+      },
+      "actions": {
+        "syncNow": "立即同步",
+        "testConnection": "测试连接",
+        "viewHistory": "查看云端历史",
+        "saveConnection": "保存连接",
+        "enableMissingScopes": "启用缺失范围",
+        "uploadLocal": "上传本地配置",
+        "downloadCloud": "下载云端配置",
+        "restore": "恢复"
+      },
+      "status": {
+        "running": "同步中…",
+        "enabled": "已启用",
+        "disabled": "未启用",
+        "never": "从未",
+        "remoteUnknown": "未检查",
+        "remoteUnavailable": "不可用",
+        "remoteAvailable": "可用 · 版本 {{revision}}",
+        "remoteEmpty": "可用 · 尚无同步数据",
+        "firstSyncTitle": "首次同步",
+        "firstSyncDescription": "选择首次同步的基准。云端保留版本历史，应用下载前会先备份本地数据。",
+        "noConflicts": "没有冲突副本"
+      },
+      "confirm": {
+        "firstSyncTitle": "开始首次同步",
+        "firstSyncUpload": "将本设备配置上传并作为云端基准？",
+        "firstSyncDownload": "下载云端配置并应用到本设备？",
+        "restoreTitle": "恢复云端快照",
+        "restore": "恢复版本 {{revision}}？应用前会先备份本地数据，应用不会自动重启。"
+      },
+      "history": {
+        "title": "云同步历史",
+        "helper": "位于 clash-verge-sync/history 的快照。恢复后会把快照发布为新版本，且不会重启应用。",
+        "empty": "暂无云端快照",
+        "revision": "版本 {{revision}}",
+        "device": "设备：{{device}}",
+        "unknownDevice": "未知设备"
+      },
+      "messages": {
+        "connectionRequired": "URL、用户名和密码均不能为空",
+        "invalidUrl": "WebDAV URL 格式无效",
+        "connectionSaved": "WebDAV 连接已保存",
+        "connectionSaveFailed": "保存 WebDAV 连接失败：{{error}}",
+        "testSuccess": "WebDAV 连接正常",
+        "testFailed": "WebDAV 连接测试失败：{{error}}",
+        "syncUploaded": "已上传云端版本 {{revision}}",
+        "syncDownloaded": "已应用云端版本 {{revision}}",
+        "syncMerged": "已合并云端版本 {{revision}}",
+        "syncRestored": "快照已恢复",
+        "syncUpToDate": "已是最新",
+        "conflictsDetected": "冲突已自动处理，旧版本副本保留在 conflicts 目录。",
+        "scopeRequired": "请至少保留一个同步范围",
+        "scopeDependency": "自定义规则需要同时启用覆写范围，才能同步其依赖的分组和规则集",
+        "scopeMismatch": "云端包含本设备未启用的同步范围（{{scopes}}）。请先启用这些范围再上传，以免删除云端数据。",
+        "syncFailed": "云同步失败：{{error}}",
+        "encryptionPasswordMissing": "启用加密或同步前请先设置负载密码",
+        "plaintextWarning": "当前未加密。订阅链接、脚本和自定义规则将以明文存储在 WebDAV 服务器上。",
+        "historyFailed": "加载云同步历史失败：{{error}}",
+        "restoreFailed": "恢复快照失败：{{error}}",
+        "historyRestored": "快照已恢复并发布为新版本",
+        "restoreNoRestart": "恢复已应用；应用未重启"
+      }
+    },
     "misc": {
       "title": "杂项设置",
       "fields": {
@@ -414,17 +573,11 @@
         "autoCheckUpdate": "自动检查更新",
         "enableBuiltinEnhanced": "内置增强功能",
         "proxyLayoutColumns": "代理页布局列数",
-        "autoLogClean": "自动清理日志",
-        "autoDelayDetection": "自动延迟检测",
-        "autoDelayDetectionInterval": "自动延迟检测间隔",
-        "defaultLatencyTest": "默认测试链接",
-        "defaultLatencyTimeout": "测试超时时间"
+        "autoLogClean": "自动清理日志"
       },
       "tooltips": {
         "autoCloseConnections": "当代理组选中节点或代理模式变动时，关闭已建立的连接",
-        "enableBuiltinEnhanced": "配置文件的兼容性处理",
-        "autoDelayDetection": "后台定时检测当前节点延迟",
-        "defaultLatencyTest": "仅用于 HTTP 客户端请求测试，不会对配置文件产生影响"
+        "enableBuiltinEnhanced": "配置文件的兼容性处理"
       },
       "options": {
         "proxyLayoutColumns": {
@@ -434,6 +587,74 @@
           "never": "不清理",
           "retainDays": "保留 {{n}} 天"
         }
+      }
+    },
+    "subscription": {
+      "title": "订阅与节点",
+      "sections": {
+        "updates": "订阅更新",
+        "health": "定时测试与健康检查",
+        "display": "节点显示",
+        "info": "订阅信息"
+      },
+      "fields": {
+        "defaultUpdateInterval": "默认更新间隔",
+        "updateOnStartup": "启动时更新",
+        "updateOnlyCurrent": "仅更新当前订阅",
+        "notifyOnFailure": "更新失败时通知",
+        "healthEnabled": "启用定时测试",
+        "testInterval": "链路测试间隔",
+        "deepTestInterval": "真实站点测试间隔",
+        "scope": "测试范围",
+        "verifyOnSelect": "切换后验证节点",
+        "runNow": "立即执行一次健康检查",
+        "latencyTestUrl": "默认延迟测试链接",
+        "latencyTimeout": "默认延迟测试超时",
+        "l1Targets": "链路测试目标",
+        "l2Targets": "真实站点测试目标",
+        "targetUrl": "链接",
+        "targetExpected": "期望状态",
+        "targetKeyword": "关键字",
+        "targetTimeout": "超时",
+        "hideTimeout": "隐藏超时节点",
+        "hideUntested": "隐藏未测试节点",
+        "hideUnhealthy": "隐藏不健康节点",
+        "hideSlow": "隐藏慢于",
+        "defaultSort": "默认排序",
+        "showTraffic": "显示订阅流量",
+        "expiryWarningDays": "过期提醒天数"
+      },
+      "actions": {
+        "addTarget": "添加目标",
+        "runNow": "立即执行"
+      },
+      "feedback": {
+        "healthStarted": "健康检查已开始"
+      },
+      "options": {
+        "scope": {
+          "currentNode": "各分组当前节点",
+          "currentGroup": "所有分组",
+          "allGroups": "所有分组（含 GLOBAL）"
+        },
+        "sort": {
+          "default": "默认",
+          "delay": "延迟",
+          "name": "名称"
+        }
+      },
+      "validation": {
+        "updateInterval": "请输入 1440-43200 分钟",
+        "l1Interval": "请输入 1-1440 分钟",
+        "l2Interval": "请输入 1-1440 分钟",
+        "latencyTimeout": "请输入 1000-30000 毫秒",
+        "hideSlowMs": "请输入 0-60000 毫秒",
+        "expiryWarningDays": "请输入 1-365 天",
+        "url": "请输入有效的 http:// 或 https:// 链接",
+        "expected": "请填写状态码或范围，例如 200 或 200-299",
+        "targetTimeout": "请输入 500-60000 毫秒",
+        "requireL1": "请至少添加一个链路测试目标",
+        "requireL2": "请至少添加一个真实站点测试目标"
       }
     },
     "update": {

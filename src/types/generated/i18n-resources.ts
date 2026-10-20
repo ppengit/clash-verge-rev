@@ -7,6 +7,7 @@ export interface TranslationResources {
       components: {
         actions: {
           active: string
+          addRule: string
           closeConnection: string
           closed: string
         }
@@ -421,11 +422,33 @@ export interface TranslationResources {
         qrViewer: {
           title: string
         }
+        updateConflict: {
+          actions: {
+            apply: string
+            delete: string
+            keep: string
+            remap: string
+          }
+          description: string
+          errors: {
+            remaining: string
+            unresolvable: string
+            unresolved: string
+          }
+          feedback: {
+            updated: string
+          }
+          fields: {
+            policy: string
+          }
+          title: string
+        }
       }
       page: {
         actions: {
           import: string
           reactivate: string
+          subscriptionSettings: string
           updateAll: string
           viewRuntimeConfig: string
         }
@@ -514,6 +537,8 @@ export interface TranslationResources {
         }
         warnings: {
           invalidTestUrl: string
+          unhealthyNode: string
+          unhealthyNodeWithAlternatives: string
         }
       }
       page: {
@@ -544,7 +569,9 @@ export interface TranslationResources {
             openLogs: string
             openProfiles: string
             restartCore: string
+            showAll: string
           }
+          allHidden: string
           coreUnavailable: {
             description: string
             title: string
@@ -564,8 +591,21 @@ export interface TranslationResources {
             title: string
           }
         }
+        health: {
+          delay: string
+          failedTargets: string
+          states: {
+            degraded: string
+            healthy: string
+            siteBlocked: string
+            testing: string
+            unusable: string
+            unverified: string
+          }
+        }
         labels: {
           delayCheckReset: string
+          hiddenCount: string
           nodeCount: string
           proxyCount: string
         }
@@ -599,7 +639,9 @@ export interface TranslationResources {
           delayCheck: string
           delayCheckUrl: string
           filter: string
+          hideUnavailableNodes: string
           locate: string
+          showAllNodes: string
           showBasic: string
           showDetail: string
           sortDefault: string
@@ -618,6 +660,8 @@ export interface TranslationResources {
             updateFailed: string
             updateSuccess: string
           }
+          ruleCopied: string
+          ruleDeleted: string
         }
       }
       modals: {
@@ -677,8 +721,63 @@ export interface TranslationResources {
           }
           title: string
         }
+        quickAdd: {
+          actions: {
+            add: string
+            undo: string
+          }
+          advanced: string
+          applyToAll: string
+          currentProfile: string
+          duplicateHint: string
+          feedback: {
+            added: string
+            undone: string
+          }
+          fields: {
+            policy: string
+            position: string
+            profile: string
+            type: string
+            value: string
+          }
+          position: {
+            append: string
+            prepend: string
+          }
+          preview: string
+          subscriptionHint: string
+          title: string
+          validation: {
+            duplicate: string
+            globalBuiltinOnly: string
+            invalidValue: string
+            policyRequired: string
+            profileRequired: string
+            unknownPolicy: string
+            valueRequired: string
+          }
+        }
       }
       page: {
+        actions: {
+          addRule: string
+          copyRule: string
+          deleteRule: string
+          menu: string
+          rebindPolicy: string
+        }
+        badges: {
+          custom: string
+          global: string
+          legacy: string
+          subscription: string
+        }
+        filters: {
+          all: string
+          custom: string
+          subscription: string
+        }
         provider: {
           actions: {
             update: string
@@ -1120,11 +1219,7 @@ export interface TranslationResources {
             appLogMaxSize: string
             autoCheckUpdate: string
             autoCloseConnections: string
-            autoDelayDetection: string
-            autoDelayDetectionInterval: string
             autoLogClean: string
-            defaultLatencyTest: string
-            defaultLatencyTimeout: string
             enableBuiltinEnhanced: string
             proxyLayoutColumns: string
           }
@@ -1140,8 +1235,6 @@ export interface TranslationResources {
           title: string
           tooltips: {
             autoCloseConnections: string
-            autoDelayDetection: string
-            defaultLatencyTest: string
             enableBuiltinEnhanced: string
           }
         }
@@ -1149,6 +1242,204 @@ export interface TranslationResources {
           fields: {
             ipAddress: string
             macAddress: string
+          }
+          title: string
+        }
+        subscription: {
+          actions: {
+            addTarget: string
+            runNow: string
+          }
+          feedback: {
+            healthStarted: string
+          }
+          fields: {
+            deepTestInterval: string
+            defaultSort: string
+            defaultUpdateInterval: string
+            expiryWarningDays: string
+            healthEnabled: string
+            hideSlow: string
+            hideTimeout: string
+            hideUnhealthy: string
+            hideUntested: string
+            l1Targets: string
+            l2Targets: string
+            latencyTestUrl: string
+            latencyTimeout: string
+            notifyOnFailure: string
+            runNow: string
+            scope: string
+            showTraffic: string
+            targetExpected: string
+            targetKeyword: string
+            targetTimeout: string
+            targetUrl: string
+            testInterval: string
+            updateOnlyCurrent: string
+            updateOnStartup: string
+            verifyOnSelect: string
+          }
+          options: {
+            scope: {
+              allGroups: string
+              currentGroup: string
+              currentNode: string
+            }
+            sort: {
+              default: string
+              delay: string
+              name: string
+            }
+          }
+          sections: {
+            display: string
+            health: string
+            info: string
+            updates: string
+          }
+          title: string
+          validation: {
+            expected: string
+            expiryWarningDays: string
+            hideSlowMs: string
+            l1Interval: string
+            l2Interval: string
+            latencyTimeout: string
+            requireL1: string
+            requireL2: string
+            targetTimeout: string
+            updateInterval: string
+            url: string
+          }
+        }
+        sync: {
+          actions: {
+            downloadCloud: string
+            enableMissingScopes: string
+            restore: string
+            saveConnection: string
+            syncNow: string
+            testConnection: string
+            uploadLocal: string
+            viewHistory: string
+          }
+          confirm: {
+            firstSyncDownload: string
+            firstSyncTitle: string
+            firstSyncUpload: string
+            restore: string
+            restoreTitle: string
+          }
+          description: string
+          fields: {
+            conflictPolicy: string
+            dangerAcceptInvalidCerts: string
+            deviceName: string
+            enabled: string
+            encrypt: string
+            encryptionPassword: string
+            interval: string
+            lastError: string
+            lastRevision: string
+            lastSyncedAt: string
+            mode: string
+            onChange: string
+            onStartup: string
+            password: string
+            remote: string
+            state: string
+            username: string
+            webdavUrl: string
+          }
+          helpers: {
+            configureInBackup: string
+            dangerAcceptInvalidCerts: string
+            deviceName: string
+            enabled: string
+            encryption: string
+            interval: string
+            onChange: string
+            onStartup: string
+            reuseBackupAccount: string
+            scopeCustomRules: string
+            scopeOverrides: string
+            scopeSettings: string
+            scopesNever: string
+            scopeSubscriptions: string
+            testSavedAccount: string
+          }
+          history: {
+            device: string
+            empty: string
+            helper: string
+            revision: string
+            title: string
+            unknownDevice: string
+          }
+          messages: {
+            conflictsDetected: string
+            connectionRequired: string
+            connectionSaved: string
+            connectionSaveFailed: string
+            encryptionPasswordMissing: string
+            historyFailed: string
+            historyRestored: string
+            invalidUrl: string
+            plaintextWarning: string
+            restoreFailed: string
+            restoreNoRestart: string
+            scopeDependency: string
+            scopeMismatch: string
+            scopeRequired: string
+            syncDownloaded: string
+            syncFailed: string
+            syncMerged: string
+            syncRestored: string
+            syncUploaded: string
+            syncUpToDate: string
+            testFailed: string
+            testSuccess: string
+          }
+          options: {
+            conflictPolicy: {
+              ask: string
+              lastModified: string
+              local: string
+              remote: string
+            }
+            mode: {
+              download: string
+              twoWay: string
+              upload: string
+            }
+            scopes: {
+              customRules: string
+              overrides: string
+              settings: string
+              subscriptions: string
+            }
+          }
+          sections: {
+            behavior: string
+            conflicts: string
+            connection: string
+            scopes: string
+            security: string
+            status: string
+          }
+          status: {
+            disabled: string
+            enabled: string
+            firstSyncDescription: string
+            firstSyncTitle: string
+            never: string
+            noConflicts: string
+            remoteAvailable: string
+            remoteEmpty: string
+            remoteUnavailable: string
+            remoteUnknown: string
+            running: string
           }
           title: string
         }
@@ -1373,6 +1664,35 @@ export interface TranslationResources {
             tunMode: string
             tunUnavailable: string
           }
+        }
+        subscription: {
+          fields: {
+            display: string
+            health: string
+            info: string
+            updates: string
+          }
+          summaries: {
+            display: string
+            healthDisabled: string
+            healthEnabled: string
+            infoDisabled: string
+            infoEnabled: string
+            updates: string
+          }
+          title: string
+        }
+        sync: {
+          fields: {
+            settings: string
+          }
+          summaries: {
+            disabled: string
+            enabled: string
+            lastError: string
+            never: string
+          }
+          title: string
         }
         system: {
           fields: {

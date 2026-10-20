@@ -33,6 +33,11 @@ pub struct PrfItem {
     #[specta(type = Option<std::string::String>)]
     pub uid: Option<String>,
 
+    /// Stable identity shared with backups and custom rules; independent of `uid`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[specta(type = Option<std::string::String>)]
+    pub sync_id: Option<String>,
+
     /// enum value: remote | local | script | merge
     #[serde(rename = "type")]
     #[specta(type = Option<std::string::String>)]
@@ -228,6 +233,7 @@ impl PrfItem {
         }
         Ok(Self {
             uid: Some(uid),
+            sync_id: Some(help::get_uid("S").into()),
             itype: Some("local".into()),
             name: Some(name),
             desc: Some(desc),
@@ -408,6 +414,7 @@ impl PrfItem {
 
         Ok(Self {
             uid: Some(uid),
+            sync_id: Some(help::get_uid("S").into()),
             itype: Some("remote".into()),
             name: Some(name),
             desc: desc.cloned(),
