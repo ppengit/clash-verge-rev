@@ -1,5 +1,5 @@
 import { GitHub, HelpOutlineRounded, Telegram } from '@mui/icons-material'
-import { Box, ButtonGroup, IconButton, Grid } from '@mui/material'
+import { Box, ButtonGroup, IconButton } from '@mui/material'
 import { useLockFn } from 'ahooks'
 import { useTranslation } from 'react-i18next'
 
@@ -75,56 +75,37 @@ const SettingPage = () => {
         </ButtonGroup>
       }
     >
-      <Grid container spacing={1.5} columns={{ xs: 6, sm: 6, md: 12 }}>
-        <Grid size={6}>
+      <Box
+        sx={{
+          columnCount: { xs: 1, md: 2 },
+          columnFill: 'balance',
+          columnGap: 1.5,
+        }}
+      >
+        {[
+          { key: 'system', section: <SettingSystem key="system" onError={onError} /> },
+          { key: 'subscription', section: <SettingSubscription key="subscription" /> },
+          { key: 'clash', section: <SettingClash key="clash" onError={onError} /> },
+          { key: 'basic', section: <SettingVergeBasic key="basic" onError={onError} /> },
+          {
+            key: 'advanced',
+            section: <SettingVergeAdvanced key="advanced" onError={onError} />,
+          },
+        ].map(({ key, section }) => (
           <Box
+            key={key}
             sx={{
+              breakInside: 'avoid',
               borderRadius: 2,
-              marginBottom: 1.5,
+              mb: 1.5,
+              overflow: 'hidden',
               backgroundColor: isDark ? '#282a36' : '#ffffff',
             }}
           >
-            <SettingSystem onError={onError} />
+            {section}
           </Box>
-          <Box
-            sx={{
-              borderRadius: 2,
-              marginBottom: 1.5,
-              backgroundColor: isDark ? '#282a36' : '#ffffff',
-            }}
-          >
-            <SettingClash onError={onError} />
-          </Box>
-        </Grid>
-        <Grid size={6}>
-          <Box
-            sx={{
-              borderRadius: 2,
-              marginBottom: 1.5,
-              backgroundColor: isDark ? '#282a36' : '#ffffff',
-            }}
-          >
-            <SettingSubscription />
-          </Box>
-          <Box
-            sx={{
-              borderRadius: 2,
-              marginBottom: 1.5,
-              backgroundColor: isDark ? '#282a36' : '#ffffff',
-            }}
-          >
-            <SettingVergeBasic onError={onError} />
-          </Box>
-          <Box
-            sx={{
-              borderRadius: 2,
-              backgroundColor: isDark ? '#282a36' : '#ffffff',
-            }}
-          >
-            <SettingVergeAdvanced onError={onError} />
-          </Box>
-        </Grid>
-      </Grid>
+        ))}
+      </Box>
     </BasePage>
   )
 }
