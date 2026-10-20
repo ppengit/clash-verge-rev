@@ -933,6 +933,9 @@ impl NodeHealthManager {
         for group in &groups {
             for member in &group.members {
                 if let Some(resolved) = resolve_node(&view, member) {
+                    if is_builtin_policy(&resolved.key_node) {
+                        continue;
+                    }
                     view_keys.insert(HealthKey {
                         profile: profile.clone(),
                         group: group.name.as_str().to_owned(),
@@ -962,6 +965,9 @@ impl NodeHealthManager {
                 let Some(resolved) = resolve_node(&view, member) else {
                     continue;
                 };
+                if is_builtin_policy(&resolved.key_node) {
+                    continue;
+                }
                 if scope == HealthScope::CurrentNode && group.now.as_deref() != Some(resolved.key_node.as_str()) {
                     continue;
                 }
@@ -1464,6 +1470,10 @@ fn resolve_node(view: &ProxyViewV1, member: &ProxyMemberRef) -> Option<ResolvedN
             provider: None,
         }),
     }
+}
+
+fn is_builtin_policy(name: &str) -> bool {
+    matches!(name, "DIRECT" | "REJECT" | "REJECT-DROP" | "PASS" | "COMPATIBLE")
 }
 
 fn push_sample(samples: &mut Vec<HealthSample>, sample: HealthSample) {

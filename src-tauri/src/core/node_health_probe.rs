@@ -5,6 +5,8 @@
 //! verification talks to the external controller directly to pass `expected`.
 
 use crate::config::{ClashInfo, Config};
+use crate::core::manager::{CoreManager, RunningMode};
+use crate::utils::dirs;
 use clash_verge_logging::{Type, logging};
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
@@ -148,9 +150,14 @@ impl ControllerClient {
         if tcp_controller_enabled().await {
             Self::new(&info)
         } else {
-            // The runtime config blanks `external-controller` unless the user enables it; the
-            // IPC socket the plugin uses is always available, so expected-status probes use it.
-            Self::new_ipc()
+            // Service-managed cores listen on the service pipe; sidecar cores use their own
+            // per-process pipe. The plugin tracks the same distinction when the core starts.
+            let socket_path = if matches!(*CoreManager::global().get_running_mode(), RunningMode::Service) {
+                dirs::ipc_path()?
+            } else {
+                dirs::sidecar_ipc_path()?
+            };
+            Self::new_ipc(&socket_path)
         }
     }
 
@@ -174,8 +181,8 @@ impl ControllerClient {
         })
     }
 
-    fn new_ipc() -> anyhow::Result<Self> {
-        let socket_path = crate::config::IClashTemp::guard_external_controller_ipc();
+    fn new_ipc(socket_path: &std::path::Path) -> anyhow::Result<Self> {
+        let socket_path = socket_path.to_string_lossy().into_owned();
         let builder = reqwest::Client::builder().no_proxy();
         #[cfg(unix)]
         let builder = builder.unix_socket(socket_path.as_str());
