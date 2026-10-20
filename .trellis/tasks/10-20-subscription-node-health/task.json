@@ -1,0 +1,30 @@
+{
+  "id": "subscription-node-health",
+  "name": "subscription-node-health",
+  "title": "Subscription and node settings with automated health verification",
+  "description": "Add a subscription and node settings section, replace the home-page auto delay detector with a Rust health manager using expected HTTP status probes, and add node display filters with a per-group toolbar toggle.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "fullstack",
+  "package": null,
+  "priority": "P1",
+  "creator": "PJ",
+  "assignee": "PJ",
+  "createdAt": "2026-10-20",
+  "completedAt": null,
+  "branch": "feat/custom-rules-quick-add",
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "10-20-rules-health-webdav-sync",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "validation": "pnpm typecheck/lint and 45 tests pass; cargo check and cargo test --no-run pass; runtime tests blocked by Windows loader 0xC0000139",
+    "next": "child 3: webdav-sync",
+    "review": "trellis-check: no critical findings after fixes; residual warnings closed"
+  }
+}

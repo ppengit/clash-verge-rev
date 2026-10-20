@@ -1,0 +1,6 @@
+{"file": "AGENTS.md", "reason": "Repository collaboration constraints and review rules"}
+{"file": "src/AGENTS.md", "reason": "Frontend architecture guardrails"}
+{"file": "src-tauri/AGENTS.md", "reason": "Backend architecture guardrails"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development spec index"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development spec index"}
+{"file": ".trellis/spec/guides/index.md", "reason": "Cross-layer and code-reuse thinking guides"}

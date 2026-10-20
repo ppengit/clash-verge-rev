@@ -1,0 +1,30 @@
+{
+  "id": "custom-rules-quick-add",
+  "name": "custom-rules-quick-add",
+  "title": "Standalone custom rules and quick rule creation",
+  "description": "Move custom rules into a standalone user-owned file keyed by a stable profile sync_id, inject them during config enhancement, and provide quick rule creation from the rules and connections pages with subscription-update compatibility checks.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "fullstack",
+  "package": null,
+  "priority": "P1",
+  "creator": "PJ",
+  "assignee": "PJ",
+  "createdAt": "2026-10-20",
+  "completedAt": null,
+  "branch": "feat/custom-rules-quick-add",
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "10-20-rules-health-webdav-sync",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "validation": "pnpm typecheck/lint pass; cargo check and cargo test --no-run pass; runtime tests blocked by Windows loader 0xC0000139",
+    "review": "trellis-check re-check: no critical findings; residual warnings fixed",
+    "next": "child 2: subscription-node-health"
+  }
+}
