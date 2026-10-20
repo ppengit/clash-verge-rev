@@ -757,6 +757,7 @@ export interface TranslationResources {
             unknownPolicy: string
             valueRequired: string
           }
+          valueHint: string
         }
       }
       page: {

@@ -98,7 +98,7 @@ const RuleItem = (props: Props) => {
             size="small"
             variant="outlined"
             label={t(SOURCE_LABEL_KEYS[source])}
-            sx={{ height: 18, fontSize: 10 }}
+            sx={{ height: 20, fontSize: 11, '& .MuiChip-label': { px: 0.75 } }}
           />
         )}
       </Box>

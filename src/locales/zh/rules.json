@@ -48,6 +48,7 @@
       "advanced": "高级",
       "applyToAll": "应用到所有订阅（仅内置策略）",
       "preview": "预览",
+      "valueHint": "示例：{{example}}。只填写要匹配的内容，不要包含规则类型和策略。",
       "duplicateHint": "已存在完全相同的规则（{{id}}）。",
       "subscriptionHint": "订阅中已有匹配该值的规则，新规则会按所选位置插入。",
       "fields": {

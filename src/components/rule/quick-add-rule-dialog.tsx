@@ -13,6 +13,7 @@ import {
   MenuItem,
   Select,
   Snackbar,
+  Stack,
   TextField,
   Typography,
 } from '@mui/material'
@@ -243,7 +244,15 @@ const QuickAddRuleForm = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{t('rules.modals.quickAdd.title')}</DialogTitle>
-      <DialogContent sx={{ display: 'grid', gap: 2, pt: 1 }}>
+      <DialogContent
+        sx={{
+          display: 'grid',
+          gap: 1.5,
+          pt: 2,
+          alignContent: 'start',
+          scrollbarGutter: 'stable',
+        }}
+      >
         {error && <Alert severity="error">{error}</Alert>}
 
         <FormControl size="small" fullWidth>
@@ -293,6 +302,13 @@ const QuickAddRuleForm = ({
           label={t('rules.modals.quickAdd.fields.value')}
           value={value}
           placeholder={ruleMeta?.example}
+          helperText={
+            ruleMeta?.example
+              ? t('rules.modals.quickAdd.valueHint', {
+                  example: ruleMeta.example,
+                })
+              : undefined
+          }
           onChange={(event) => setValue(event.target.value)}
         />
 
@@ -352,7 +368,12 @@ const QuickAddRuleForm = ({
           />
         )}
 
-        <Box>
+        <Stack
+          direction="row"
+          spacing={1}
+          useFlexGap
+          sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+        >
           <Button
             size="small"
             onClick={() => setAdvanced((current) => !current)}
@@ -369,15 +390,17 @@ const QuickAddRuleForm = ({
                 />
               }
               label={t('rules.modals.quickAdd.applyToAll')}
+              sx={{ m: 0 }}
             />
           )}
-        </Box>
+        </Stack>
 
         <Box
           sx={{
-            p: 1,
+            p: 1.5,
             borderRadius: 1,
-            border: '1px solid var(--divider-color)',
+            border: 1,
+            borderColor: 'divider',
             wordBreak: 'break-all',
           }}
         >

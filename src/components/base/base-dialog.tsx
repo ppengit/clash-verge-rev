@@ -4,6 +4,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  type DialogProps,
   type SxProps,
   type Theme,
 } from '@mui/material'
@@ -18,6 +19,9 @@ interface Props {
   disableOk?: boolean
   disableCancel?: boolean
   disableFooter?: boolean
+  maxWidth?: DialogProps['maxWidth']
+  fullWidth?: boolean
+  dividers?: boolean
   contentSx?: SxProps<Theme>
   children?: ReactNode
   loading?: boolean
@@ -38,6 +42,9 @@ export const BaseDialog: React.FC<Props> = ({
   okBtn,
   cancelBtn,
   disableEnforceFocus,
+  maxWidth,
+  fullWidth,
+  dividers,
   contentSx,
   disableCancel,
   disableOk,
@@ -52,10 +59,14 @@ export const BaseDialog: React.FC<Props> = ({
       open={open}
       onClose={onClose}
       disableEnforceFocus={disableEnforceFocus}
+      maxWidth={maxWidth}
+      fullWidth={fullWidth}
     >
       <DialogTitle>{title}</DialogTitle>
 
-      <DialogContent sx={contentSx}>{children}</DialogContent>
+      <DialogContent dividers={dividers} sx={contentSx}>
+        {children}
+      </DialogContent>
 
       {!disableFooter && (
         <DialogActions>

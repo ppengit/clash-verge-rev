@@ -301,15 +301,19 @@ const RulesPage = () => {
         sx={{
           pt: 1,
           mb: 0.5,
-          mx: '10px',
+          mx: 2,
           minHeight: '36px',
           display: 'flex',
           alignItems: 'center',
           gap: 1,
+          rowGap: 1,
+          flexWrap: 'wrap',
         }}
       >
-        <BaseSearchBox onSearch={(match) => setMatch(() => match)} />
-        <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+        <Box sx={{ flex: '1 1 260px', minWidth: 220 }}>
+          <BaseSearchBox onSearch={(match) => setMatch(() => match)} />
+        </Box>
+        <Box sx={{ display: 'flex', gap: 0.5, ml: 'auto', flexShrink: 0 }}>
           {(['all', 'custom', 'subscription'] as const).map((value) => (
             <Chip
               key={value}

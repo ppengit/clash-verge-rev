@@ -408,6 +408,7 @@ export const translationKeys = [
   'rules.modals.quickAdd.advanced',
   'rules.modals.quickAdd.applyToAll',
   'rules.modals.quickAdd.preview',
+  'rules.modals.quickAdd.valueHint',
   'rules.modals.quickAdd.duplicateHint',
   'rules.modals.quickAdd.subscriptionHint',
   'rules.modals.quickAdd.fields.profile',

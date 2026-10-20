@@ -48,6 +48,7 @@
       "advanced": "Advanced",
       "applyToAll": "Apply to all subscriptions (built-in policies only)",
       "preview": "Preview",
+      "valueHint": "Example: {{example}}. Enter only the value to match, without the rule type or policy.",
       "duplicateHint": "An identical rule already exists ({{id}}).",
       "subscriptionHint": "A subscription rule already matches this value. Your rule will be inserted in the chosen position.",
       "fields": {

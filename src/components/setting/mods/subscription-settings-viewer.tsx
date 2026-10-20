@@ -451,12 +451,24 @@ export const SubscriptionSettingsViewer = forwardRef<DialogRef>((_, ref) => {
               <DeleteOutlineRounded fontSize="small" />
             </IconButton>
           </Box>
-          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1,
+              mt: 1,
+              alignItems: 'start',
+              gridTemplateColumns: { xs: '1fr 1fr', sm: '130px 1fr 130px' },
+              gridTemplateAreas: {
+                xs: '"expected timeout" "keyword keyword"',
+                sm: '"expected keyword timeout"',
+              },
+            }}
+          >
             <TextField
               autoComplete="new-password"
               size="small"
               label={t('settings.modals.subscription.fields.targetExpected')}
-              sx={{ width: 130 }}
+              sx={{ gridArea: 'expected' }}
               value={target.expected}
               error={!!errors[`${level}.${index}.expected`]}
               helperText={errors[`${level}.${index}.expected`]}
@@ -468,7 +480,7 @@ export const SubscriptionSettingsViewer = forwardRef<DialogRef>((_, ref) => {
               autoComplete="new-password"
               size="small"
               label={t('settings.modals.subscription.fields.targetKeyword')}
-              sx={{ flex: 1 }}
+              sx={{ gridArea: 'keyword', minWidth: 0 }}
               value={target.keyword}
               onChange={(event) =>
                 updateTarget(level, index, { keyword: event.target.value })
@@ -479,7 +491,7 @@ export const SubscriptionSettingsViewer = forwardRef<DialogRef>((_, ref) => {
               size="small"
               type="number"
               label={t('settings.modals.subscription.fields.targetTimeout')}
-              sx={{ width: 130 }}
+              sx={{ gridArea: 'timeout' }}
               value={target.timeout}
               error={!!errors[`${level}.${index}.timeout`]}
               helperText={errors[`${level}.${index}.timeout`]}
@@ -506,7 +518,12 @@ export const SubscriptionSettingsViewer = forwardRef<DialogRef>((_, ref) => {
   const sectionTitle = (key: string) => (
     <Typography
       variant="subtitle2"
-      sx={{ mt: 2, mb: 0.5, fontWeight: 700 }}
+      sx={{
+        mt: 2,
+        mb: 0.5,
+        fontWeight: 700,
+        '&:first-of-type': { mt: 0 },
+      }}
       color="text.primary"
     >
       {t(key)}
@@ -517,7 +534,10 @@ export const SubscriptionSettingsViewer = forwardRef<DialogRef>((_, ref) => {
     <BaseDialog
       open={open}
       title={t('settings.modals.subscription.title')}
-      contentSx={{ width: { xs: 360, sm: 620 }, maxHeight: '70vh' }}
+      maxWidth="sm"
+      fullWidth
+      dividers
+      contentSx={{ maxHeight: '70vh', scrollbarGutter: 'stable' }}
       okBtn={t('shared.actions.save')}
       cancelBtn={t('shared.actions.cancel')}
       onClose={() => setOpen(false)}

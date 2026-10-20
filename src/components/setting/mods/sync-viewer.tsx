@@ -389,7 +389,10 @@ export function SyncViewer({ ref }: { ref?: Ref<DialogRef> }) {
     <BaseDialog
       open={open}
       title={t('settings.modals.sync.title')}
-      contentSx={{ width: { xs: 360, sm: 640 } }}
+      maxWidth="sm"
+      fullWidth
+      dividers
+      contentSx={{ maxHeight: '72vh', scrollbarGutter: 'stable' }}
       disableOk
       cancelBtn={t('shared.actions.close')}
       onCancel={() => setOpen(false)}

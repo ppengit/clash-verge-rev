@@ -93,7 +93,10 @@ export const SyncHistoryViewer = ({
     <BaseDialog
       open={open}
       title={t('settings.modals.sync.history.title')}
-      contentSx={{ width: { xs: 360, sm: 560 } }}
+      maxWidth="sm"
+      fullWidth
+      dividers
+      contentSx={{ maxHeight: '70vh', scrollbarGutter: 'stable' }}
       disableOk
       cancelBtn={t('shared.actions.close')}
       onCancel={onClose}
