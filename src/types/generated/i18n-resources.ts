@@ -547,6 +547,7 @@ export interface TranslationResources {
           connect: string
           connecting: string
           disconnect: string
+          healthCheck: string
           toggleChain: string
         }
         chain: {

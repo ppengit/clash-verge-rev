@@ -1,4 +1,9 @@
-import { LanOutlined, LanRounded, WarningRounded } from '@mui/icons-material'
+import {
+  LanOutlined,
+  LanRounded,
+  MonitorHeartRounded,
+  WarningRounded,
+} from '@mui/icons-material'
 import { Box, Button, ButtonGroup, Typography } from '@mui/material'
 import { useLockFn } from 'ahooks'
 import { useCallback, useEffect, useReducer, useState } from 'react'
@@ -11,9 +16,11 @@ import {
   useAppRefreshers,
   useClashConfigData,
 } from '@/providers/app-data-context'
+import { useNodeHealth } from '@/providers/node-health-context'
 import {
   getRuntimeProxyChainConfig,
   patchClashMode,
+  runNodeHealthCheck,
   updateProxyChainConfigInRuntime,
 } from '@/services/cmds'
 import { mutate } from '@/services/mutate'
@@ -28,6 +35,9 @@ const isMode = (value: unknown): value is Mode =>
 
 const ProxyPage = () => {
   const { t } = useTranslation()
+  const { snapshot: healthSnapshot, refresh: refreshNodeHealth } =
+    useNodeHealth()
+  const [healthBusy, setHealthBusy] = useState(false)
 
   // 从 localStorage 恢复链式代理按钮状态
   const [isChainMode, setIsChainMode] = useState(() => {
@@ -96,6 +106,24 @@ const ProxyPage = () => {
     if (isChainMode) onExitChainMode().catch(() => {})
     else setChainConfirmOpen(true)
   }
+
+  const onRunHealthCheck = useLockFn(async () => {
+    setHealthBusy(true)
+    try {
+      await mutate(() => runNodeHealthCheck(), {
+        id: 'run-node-health-check',
+        errorNotice: false,
+      })
+      showNotice.success(
+        'settings.modals.subscription.feedback.healthStarted',
+      )
+      await refreshNodeHealth()
+    } catch (error) {
+      showNotice.error(error)
+    } finally {
+      setHealthBusy(false)
+    }
+  })
 
   // 当开启链式代理模式时，获取配置数据
   useEffect(() => {
@@ -197,6 +225,18 @@ const ProxyPage = () => {
             }
           >
             {t('proxies.page.actions.toggleChain')}
+          </Button>
+
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => {
+              onRunHealthCheck().catch(() => {})
+            }}
+            loading={healthBusy || healthSnapshot?.running === true}
+            startIcon={<MonitorHeartRounded fontSize="small" />}
+          >
+            {t('proxies.page.actions.healthCheck')}
           </Button>
         </Box>
       }

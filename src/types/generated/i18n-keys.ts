@@ -298,6 +298,7 @@ export const translationKeys = [
   'proxies.page.modes.global',
   'proxies.page.modes.direct',
   'proxies.page.actions.toggleChain',
+  'proxies.page.actions.healthCheck',
   'proxies.page.actions.connect',
   'proxies.page.actions.disconnect',
   'proxies.page.actions.connecting',

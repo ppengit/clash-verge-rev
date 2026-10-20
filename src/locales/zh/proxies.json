@@ -7,6 +7,7 @@
     },
     "actions": {
       "toggleChain": "链式代理",
+      "healthCheck": "健康检查",
       "connect": "连接",
       "disconnect": "断开",
       "connecting": "连接中...",
