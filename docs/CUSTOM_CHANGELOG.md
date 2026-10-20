@@ -2,10 +2,33 @@
 
 > 本文件记录本仓库相对上游 `clash-verge-rev` 的全部定制功能与变更，供下次合并上游版本时定位冲突、移植代码和复核行为。
 >
-> - 基线版本：`v2.5.9`
+> - 上游基线版本：`v2.5.9`（`package.json` / `src-tauri/Cargo.toml` / `src-tauri/tauri.conf.json`，不因定制而修改）
+> - 当前定制版本：`custom.1`（`custom-version.json`）
+> - 完整展示版本：`v2.5.9-custom.1`
 > - 记录日期：`2026-10-20`
 > - 适用分支：`dev` 及基于 `dev` 的功能分支
 > - 本文件是 fork 专属文档，不属于上游功能；合并上游时不要删除。
+
+---
+
+## 0. 版本命名与发布规则
+
+本仓库的版本号分成两层，互不覆盖：
+
+| 层级 | 含义 | 唯一来源 | 示例 |
+|---|---|---|---|
+| 上游版本 | 当前合并到的 clash-verge-rev 版本 | `package.json`、`src-tauri/Cargo.toml`、`src-tauri/tauri.conf.json` | `2.5.9` |
+| 定制版本 | 同一上游版本上第几次发布定制 | `custom-version.json` 的 `custom` | `1` |
+
+界面与「复制版本」显示 `v2.5.9-custom.1`，由 `src/utils/version.ts` 拼接；自动更新仍按上游版本 `2.5.9` 比较，因此上游发布 `2.5.10` 时能正常检测到更新。
+
+规则：
+
+1. 不直接修改上游版本号，否则无法判断上游是否发布了新版本。上游版本只在上游合并时随之更新。
+2. 每次发布一组定制变更，`custom` 加 1；同一版本内继续开发不重复递增。
+3. 合并到新的上游版本后，`custom` 从 1 重新开始，例如 `2.5.10-custom.1`。
+4. 根目录 `Changelog.md` 只保留上游内容，不写入 fork 条目；定制记录写在本文件。
+5. 安装包文件名仍使用上游版本；定制版本只在应用界面、诊断信息和本文件中体现。
 
 ---
 
@@ -193,11 +216,13 @@ src/providers/node-health-context.ts
 src/providers/node-health-provider.tsx
 src/services/node-health.ts
 src/services/profile-update-conflict.ts
+src/utils/version.ts
 ```
 
-### 文档
+### 版本与文档
 
 ```text
+custom-version.json
 docs/CUSTOM_CHANGELOG.md
 ```
 
@@ -259,6 +284,14 @@ docs/CUSTOM_CHANGELOG.md
 
 ---
 
-## 9. 对应 Changelog
+## 9. 定制版本记录
 
-根目录 `Changelog.md` 已新增 `v2.5.10` 条目，概述三项用户可见功能与 HTTPS 测速优化；本文件提供更细的移植说明。
+根目录 `Changelog.md` 与上游保持一致，不写入本 fork 的条目，避免上游发布新版本时无法比较版本。
+
+### custom.1（上游基线 v2.5.9，2026-10-20）
+
+- 新增「规则」页和连接详情的快速添加规则，自定义规则独立保存并在订阅更新前校验失效分组。
+- 新增「订阅与节点」设置：定时测速、真实站点健康检查、隐藏超时或错误节点。
+- 新增「备份与同步」：WebDAV 定时同步订阅信息、脚本和自定义规则，冲突时保留历史版本。
+- 优化节点测速默认使用 HTTPS，并在切换节点后提示真实站点访问失败。
+- 增加 `custom-version.json` 与 `v2.5.9-custom.1` 展示，不修改上游版本号。

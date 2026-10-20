@@ -22,7 +22,7 @@ import {
 import { useVerge } from '@/hooks/use-verge'
 import { getSystemInfo } from '@/services/cmds'
 import { showNotice } from '@/services/notice-service'
-import { version as appVersion } from '@root/package.json'
+import { APP_VERSION } from '@/utils/version'
 
 import { EnhancedCard } from './enhanced-card'
 
@@ -289,7 +289,7 @@ export const SystemInfoCard = () => {
             {t('home.components.systemInfo.fields.vergeVersion')}
           </Typography>
           <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-            v{appVersion}
+            v{APP_VERSION}
           </Typography>
         </Stack>
       </Stack>
